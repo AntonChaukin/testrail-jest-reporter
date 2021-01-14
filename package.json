@@ -7,7 +7,25 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 100000,
+    "verbose": true,
+    "maxConcurrency": 1,
+    "roots": [
+      "tests"
+    ],
+    "reporters": [
+      "default"
+    ],
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ]
   },
   "repository": {
     "type": "git",
@@ -27,6 +45,7 @@
   },
   "homepage": "https://github.com/AntonChaukin/testrail-jest-reporter#readme",
   "devDependencies": {
+    "faker": "^5.1.0",
     "jest": "^26.6.3"
   },
   "dependencies": {
