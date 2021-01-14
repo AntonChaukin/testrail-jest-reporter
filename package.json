@@ -1,0 +1,40 @@
+{
+  "name": "testrail-jest-reporter",
+  "version": "1.0.0",
+  "description": "Custom Jest reporter for Testrail synchronization",
+  "main": "index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AntonChaukin/testrail-jest-reporter.git"
+  },
+  "keywords": [
+    "jest",
+    "reporter",
+    "test",
+    "testrail",
+    "tdd"
+  ],
+  "author": "Anton Chaukin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AntonChaukin/testrail-jest-reporter/issues"
+  },
+  "homepage": "https://github.com/AntonChaukin/testrail-jest-reporter#readme",
+  "devDependencies": {
+    "jest": "^26.6.3"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "fs-extra": "^9.0.1",
+    "process": "^0.11.10",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "uuid": "^8.3.2"
+  }
+}
