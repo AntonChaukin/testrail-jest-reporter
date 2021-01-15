@@ -9,6 +9,5 @@ module.exports = {
     'user': user || 'user@example.com',
     //You TestRail password or API key for the API authentication
     'pass': pass || 'some-password',
-    //'project': '<project_id>',
     //'milestone': '<milestone_name>'
 }

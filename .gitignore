@@ -103,3 +103,7 @@ dist
 # TernJS port file
 .tern-port
 /.npmrc
+/.idea/jsLibraryMappings.xml
+/.idea/modules.xml
+/.idea/testrail-jest-reporter.iml
+/.idea/vcs.xml

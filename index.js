@@ -1,4 +1,7 @@
 'use strict';
+const chalk = require('chalk');
+const error = chalk.bold.red;
+const warning = chalk.keyword('orange');
 const {formatCase} = require('./lib/utils');
 const {add_results, get_tests} = require('./lib/caller');
 let tests = null, results = [];
@@ -23,8 +26,15 @@ class CustomTestrailReporter {
      * @param {JestRunConfig} _options - Run configuration
      */
     onRunStart(_results, _options) {
-        get_tests()
-            .then(_tests => tests = _tests);
+        if (this._options.project_id) {
+            get_tests(this._options.project_id)
+                .then(_tests => tests = _tests);
+        }
+        else {
+            console.log(error(`! Testrail Jest Reporter Error !`));
+            console.log(warning(`You must define "project_id" in jets configurations!
+                \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1" }] ]`));
+        }
     }
 
     /**
@@ -45,11 +55,12 @@ class CustomTestrailReporter {
      * @param _aggregatedResult - Results for the test run at the point in time of the test suite being executed
      */
     onTestResult(_test, _testResults, _aggregatedResult) {
-        //console.log(`onTestResult arguments: ${JSON.stringify(arguments, null, '\t')}`);
-        _testResults.testResults.forEach((result) => {
-            const testcase = formatCase(result);
-            if (testcase) accumulateResults(testcase);
-        });
+        if (tests) {
+            _testResults.testResults.forEach((result) => {
+                const testcase = formatCase(result);
+                if (testcase) accumulateResults(testcase);
+            });
+        }
     }
 
     /**
