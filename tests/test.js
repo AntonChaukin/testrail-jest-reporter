@@ -1,11 +1,11 @@
-const {formatCase, getCaseId, formatTime} = require('../lib/utils');
-const {duration, case_title, jest_results} = require('./sample');
+const {formatCase, formatTime} = require('../lib/utils');
+const {duration, jest_results} = require('./sample');
 
 describe('Reporter tests', function (){
 
     it('Should parse case id from test title', () => {
-        let number = getCaseId(case_title);
-        expect(parseInt(number)).toEqual(duration);
+        let _case = formatCase(jest_results[0]);
+        expect(_case.case_id).toEqual(duration);
     });
 
     it('Should parse elapsed time from test duration', () => {

@@ -1,6 +1,6 @@
 const faker = require('faker');
-const index = faker.random.number(10);
-const duration = faker.random.number();
+const index = faker.random.number(20);
+const duration = faker.random.number({min: 100, max: 99999});
 const title = faker.lorem.sentence();
 const _case = 'C'+duration;
 const case_title = replaceSymbolWithCaseNumber(title, index);
@@ -47,7 +47,6 @@ const results = [
 ];
 
 module.exports = {
-    case_title: case_title,
     duration: duration,
     jest_results: results
 };
