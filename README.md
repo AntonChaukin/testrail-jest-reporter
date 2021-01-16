@@ -99,10 +99,11 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 
 **Note**: The first and second **_it()_** test result will be reported, and the last - not.
 
-### Roadmap
+## Roadmap
 **This version:**
 - Add new tests Run if there are testcases that are not present in any of the existing TestRail tests Runs.
 - Add new test Runs if the Milestone not specified.
+- Add new TestRail Milestone if the specified Milestone not present in the Project.
 - Also need to write more tests.
 
 <br>**Version 2:**
@@ -110,6 +111,8 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 
 <br>**Version 3:**
 - Add ability to parse code annotations.
+- Add new TestRail testcase if **_it()_** description not specified by Case ID.
+- Add maintenance the TestRail test Plan and test Configurations.
 
 ## License
 
