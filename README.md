@@ -22,7 +22,6 @@ the Reporter must be specified in the jest-config.js or package.json file as par
  - There is no 'pending' or 'skipped' test result status in the TestRail results default <br>statuses. 
  You can add your custom status to the TestRail and specify it id as parameter 
  <br>'"statuses":{"pending": "7"}' _(recommended)_.
- - You can specify custom regex expresion _(default: /[?\d]{3,6}/gm)_
 #### Usage
 ```javascript
 // this is the part of the jest-config.js
@@ -35,8 +34,8 @@ module.exports = {
         { project_id: "1", 
             baseUrl: 'http://localhost', 
             milestone: '<milestone_name>',
-            statuses: {pending: "7"}},
-            regex: /[?\d]{3,6}/gm
+            statuses: {pending: "7"}
+        },
     ]
   ], 
     ...
@@ -54,8 +53,7 @@ module.exports = {
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
                 "milestone": '<milestone_name>',
-                "statuses": {"pending": "7"},
-                "regex": "/[?\d]{3,6}/gm"
+                "statuses": {"pending": "7"}
             }
         ]
     ]
@@ -71,15 +69,17 @@ The **testrail.conf.js** file needs to be created in your project's root folder.
 ### Use TestRail Milestone
 In first version the Reporter needs you to use milestone.
  - Use TestRail Milestone to versioning your tests.
- - **testrail.conf.js** file needs to have Milestone name filled. Or <br>it can be specified in 
+ - **testrail.conf.js** file needs to have Milestone name filled. Or <br>it can be specified in
 [Jest configuration](https://github.com/AntonChaukin/testrail-jest-reporter#jest-configurations)
+ - You can specify custom regex expresion _(default: `/[?\d]{3,6}/gm`)_
 #### Example
-```javascript
+```js
 module.exports = {
     'baseUrl': 'http://localhost',
     'user': 'user@example.com',
     'pass': 'some-password',
-    'milestone': '<milestone_name>'
+    'milestone': '<milestone_name>',
+    'regex': /[?\d]{3,6}/gm
 }
 ```
 ### Enable TestRail API
@@ -98,7 +98,7 @@ then The Reporter push the test result only to one of that Runs.
 
 ## Example tests
 
-The Case ID from TestRail must be added to **_it()_** description 
+The Case ID from TestRail may be added to **_it()_** description 
 each test result you want to push to TestRail.
 #### Usage
 ```javascript
@@ -136,6 +136,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 - Add ability to parse code annotations.
 - Add new TestRail testcase if **_it()_** description not specified by Case ID.
 - Add maintenance the TestRail test Plan and test Configurations.
+
 
 ## License
 

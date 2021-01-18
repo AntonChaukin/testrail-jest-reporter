@@ -4,9 +4,10 @@ const DEFAULT_CONFIG_FILENAME = 'testrail.conf.js';
 const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
-const config = require(configPath);
-const {formatCase} = require('./lib/utils');
-const {add_results, get_tests} = require('./lib/caller');
+const message = chalk.bold.green;
+const {regex} = require(configPath);
+const utils = require('./lib/utils');
+const caller = require('./lib/caller');
 let tests = null, results = [];
 
 class CustomTestrailReporter {
@@ -19,6 +20,9 @@ class CustomTestrailReporter {
     constructor(_globalConfig, _options) {
         this._globalConfig = _globalConfig;
         this._options = _options;
+        this._options.regex = regex;
+        this._caller = caller(_options);
+        this._utils = utils(_options);
     }
 
     /**
@@ -29,10 +33,7 @@ class CustomTestrailReporter {
      * @param {JestRunConfig} _options - Run configuration
      */
     onRunStart(_results, _options) {
-        config.baseUrl = this._options.baseUrl || config.baseUrl;
-        config.milestone = this._options.milestone || config.milestone;
-        config.statuses = this._options.statuses || config.statuses || {};
-        config.regex = this._options.regex || null;
+        const {get_tests} = this._caller;
         if (this._options.project_id) {
             get_tests(this._options.project_id)
                 .then(_tests => tests = _tests);
@@ -62,6 +63,7 @@ class CustomTestrailReporter {
      * @param _aggregatedResult - Results for the test run at the point in time of the test suite being executed
      */
     onTestResult(_test, _testResults, _aggregatedResult) {
+        const {formatCase} = this._utils;
         if (tests) {
             _testResults.testResults.forEach((result) => {
                 const testcase = formatCase(result);
@@ -78,12 +80,16 @@ class CustomTestrailReporter {
      * @param {JestTestRunResult} _results - Results from the test run
      */
     onRunComplete(_contexts, _results) {
+        const {add_results} = this._caller;
         add_results(results).then(done => done);
+        let count = 0;
+        results.map(run => run.results.map(() => count++));
+        console.log(message(`Testrail Jest Reporter updated ${count} tests in ${results.length} runs.`));
     }
 
     getLastError() {
         if (this._shouldFail) {
-            return new Error('my-custom-reporter.js reported an error');
+            return new Error('Testrail Jest Reporter reported an error');
         }
     }
 }

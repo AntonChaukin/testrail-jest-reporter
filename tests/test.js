@@ -1,4 +1,4 @@
-const {formatCase, formatTime} = require('../lib/utils');
+const {formatCase, formatTime} = require('../lib/utils')();
 const {duration, jest_results} = require('./sample');
 
 describe('Reporter tests', function (){
