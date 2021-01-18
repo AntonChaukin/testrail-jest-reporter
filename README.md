@@ -82,6 +82,7 @@ module.exports = {
     'regex': /[?\d]{3,6}/gm
 }
 ```
+**Note:** If you use a public repository, please, secure your sensitive data.
 ### Enable TestRail API
 In order to use [TestRail API](http://docs.gurock.com/testrail-api2/start), it needs to be enabled by an administrator
 <br>in your own TestRail Site Settings.
