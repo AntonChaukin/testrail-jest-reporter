@@ -17,6 +17,11 @@ As per [Jest's documentation](https://facebook.github.io/jest/docs/en/configurat
 the Reporter must be specified in the jest-config.js or package.json file as part of the `reporters` array.
  - This file should be created in your project's root folder.
  - Parameter is defined as 'project_id', which is the id of your project on TestRail.
+ - Specify the TestRail server url as parameter 'baseUrl' _(recommended)_.
+ - Specify the TestRail Milestone name as parameter 'milestone' _(recommended)_.
+ - There is no 'pending' or 'skipped' test result status in the TestRail results default <br>statuses. 
+ You can add your custom status to the TestRail and specify it id as parameter 
+ <br>'"statuses":{"pending": "7"}' _(recommended)_.
 #### Usage
 ```javascript
 // this is the part of the jest-config.js
@@ -24,7 +29,13 @@ module.exports = {
   ...,
   reporters: [
     "default",
-    ["jest-2-testrail", { project_id: "1" }]
+    [
+        "jest-2-testrail", 
+        { project_id: "1", 
+            baseUrl: 'http://localhost', 
+            milestone: '<milestone_name>',
+            statuses: {pending: "7"}}
+    ]
   ], 
     ...
 };
@@ -35,7 +46,15 @@ module.exports = {
   "jest": {
     "reporters": [
       "default",
-      ["jest-2-testrail", { "project_id": "1" }]
+        [
+            "jest-2-testrail",
+            { 
+                "project_id": "1",
+                "baseUrl": 'http://localhost',
+                "milestone": '<milestone_name>',
+                "statuses": {"pending": "7"}
+            }
+        ]
     ]
   }
 }
@@ -49,7 +68,8 @@ The **testrail.conf.js** file needs to be created in your project's root folder.
 ### Use TestRail Milestone
 In first version the Reporter needs you to use milestone.
  - Use TestRail Milestone to versioning your tests.
- - **testrail.conf.js** file needs to have Milestone name filled.
+ - **testrail.conf.js** file needs to have Milestone name filled. Or <br>it can be specified in 
+[Jest configuration](https://github.com/AntonChaukin/testrail-jest-reporter#jest-configurations)
 #### Example
 ```javascript
 module.exports = {
