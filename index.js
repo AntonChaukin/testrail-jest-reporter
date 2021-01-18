@@ -1,5 +1,5 @@
 'use strict';
-const process = require('process'), chalk = require('chalk');
+const process = require('process'), path = require('path'), chalk = require('chalk');
 const DEFAULT_CONFIG_FILENAME = 'testrail.conf.js';
 const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
@@ -32,6 +32,7 @@ class CustomTestrailReporter {
         config.baseUrl = this._options.baseUrl || config.baseUrl;
         config.milestone = this._options.milestone || config.milestone;
         config.statuses = this._options.statuses || config.statuses || {};
+        config.regex = this._options.regex || null;
         if (this._options.project_id) {
             get_tests(this._options.project_id)
                 .then(_tests => tests = _tests);
