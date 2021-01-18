@@ -22,6 +22,7 @@ the Reporter must be specified in the jest-config.js or package.json file as par
  - There is no 'pending' or 'skipped' test result status in the TestRail results default <br>statuses. 
  You can add your custom status to the TestRail and specify it id as parameter 
  <br>'"statuses":{"pending": "7"}' _(recommended)_.
+ - You can specify custom regex expresion _(default: /[?\d]{3,6}/gm)_
 #### Usage
 ```javascript
 // this is the part of the jest-config.js
@@ -34,7 +35,8 @@ module.exports = {
         { project_id: "1", 
             baseUrl: 'http://localhost', 
             milestone: '<milestone_name>',
-            statuses: {pending: "7"}}
+            statuses: {pending: "7"}},
+            regex: /[?\d]{3,6}/gm
     ]
   ], 
     ...
@@ -52,7 +54,8 @@ module.exports = {
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
                 "milestone": '<milestone_name>',
-                "statuses": {"pending": "7"}
+                "statuses": {"pending": "7"},
+                "regex": "/[?\d]{3,6}/gm"
             }
         ]
     ]
