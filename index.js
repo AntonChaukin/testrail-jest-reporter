@@ -6,11 +6,12 @@ const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
 const {regex} = require(configPath);
-const utils = require('./lib/utils');
-const caller = require('./lib/caller');
-let tests = null, results = [];
+const Utils = require('./lib/utils');
+const Caller = require('./lib/caller');
 
 class CustomTestrailReporter {
+    tests = null
+    results = []
     /**
      * constructor for the reporter
      *
@@ -19,24 +20,23 @@ class CustomTestrailReporter {
      */
     constructor(_globalConfig, _options) {
         this._globalConfig = _globalConfig;
-        this._options = _options;
-        this._options.regex = regex;
-        this._caller = caller(_options);
-        this._utils = utils(_options);
+        this._options = _options || {};
+        this._options.regex = regex || null;
+        this._caller = new Caller(this._options);
+        this._utils = new Utils(this._options);
     }
 
     /**
      * Hook to process the test run before running the tests, the only real data
      * available at this time is the number of test suites about to be executed
      *
-     * @param {JestTestRunResult} _results - Results for the test run, but only `numTotalTestSuites` is of use
-     * @param {JestRunConfig} _options - Run configuration
+     * @param  _results - Results for the test run, but only `numTotalTestSuites` is of use
+     * @param  _options - Run configuration
      */
     onRunStart(_results, _options) {
-        const {get_tests} = this._caller;
         if (this._options.project_id) {
-            get_tests(this._options.project_id)
-                .then(_tests => tests = _tests);
+            this._caller.get_tests()
+                .then(_tests => this.tests = _tests);
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
@@ -59,15 +59,14 @@ class CustomTestrailReporter {
      * This will be called many times during the test run
      *
      * @param  _test - The Test last run
-     * @param {JestTestSuiteResult} _testResults - Results for the test suite just executed
+     * @param  _testResults - Results for the test suite just executed
      * @param _aggregatedResult - Results for the test run at the point in time of the test suite being executed
      */
     onTestResult(_test, _testResults, _aggregatedResult) {
-        const {formatCase} = this._utils;
-        if (tests) {
+        if (this.tests) {
             _testResults.testResults.forEach((result) => {
-                const testcase = formatCase(result);
-                if (testcase) accumulateResults(testcase);
+                const testcase = this._utils.formatCase(result);
+                if (testcase) this._accumulateResults(testcase);
             });
         }
     }
@@ -80,11 +79,11 @@ class CustomTestrailReporter {
      * @param {JestTestRunResult} _results - Results from the test run
      */
     onRunComplete(_contexts, _results) {
-        const {add_results} = this._caller;
-        add_results(results).then(done => done);
-        let count = 0;
-        results.map(run => run.results.map(() => count++));
-        console.log(message(`Testrail Jest Reporter updated ${count} tests in ${results.length} runs.`));
+        this._caller.add_results(this.results)
+            .then(count => {
+                if (count) console
+                    .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
+            });
     }
 
     getLastError() {
@@ -92,15 +91,14 @@ class CustomTestrailReporter {
             return new Error('Testrail Jest Reporter reported an error');
         }
     }
+    _accumulateResults(testcase) {
+        let index = -1;
+        const test = this.tests.find(test => test.case_id === testcase.case_id);
+        const run_id = test && test.run_id;
+        if (run_id && !!this.results.length) index = this.results.findIndex(run => run.id === run_id);
+        if (~index) this.results[index].results.push(testcase);
+        else if (run_id) this.results.push({id: run_id, "results": [testcase]});
+    }
 }
 
 module.exports = CustomTestrailReporter;
-
-function accumulateResults(testcase) {
-    let index = -1;
-    const test = tests.find(test => test.case_id === testcase.case_id);
-    const run_id = test && test.run_id;
-    if (run_id && !!results.length) index = results.findIndex(run => run.id === run_id);
-    if (~index) results[index].results.push(testcase);
-    else if (run_id) results.push({id: run_id, "results": [testcase]});
-}
