@@ -1,11 +1,16 @@
 const faker = require('faker');
+const increaser = count(5);
 
 module.exports = {
     passed: passed,
     failed: failed,
     pending: pending,
     duration: duration,
-    case_title: case_title
+    case_title: case_title,
+    tr_test: tr_test,
+    tr_run: tr_run,
+    tr_plan: tr_plan,
+    tr_milestone: tr_milestone
 };
 
 function passed(cid) {
@@ -44,6 +49,7 @@ function failed(cid) {
         "title": _case_title
     }
 }
+
 function pending(cid) {
     const _duration = duration();
     const _case_title = case_title(_duration, cid);
@@ -61,9 +67,11 @@ function pending(cid) {
     }
 }
 
+function title() {return faker.lorem.sentence()}
+
 function case_title(duration, cid = true) {
     let string = [];
-    const _title = faker.lorem.sentence();
+    const _title = title();
     if (cid) {
         const _index = index();
         string.push(_title.slice(0,_index));
@@ -80,4 +88,194 @@ function index() {
 
 function duration() {
     return faker.random.number({min: 100, max: 99999});
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number} options.run_id
+ * @param {number} options.status_id
+ * @param {number} options.case_id
+ * @return {{custom_expected: string, run_id: number, custom_steps_separated: [{expected: string, content: string}, {expected: string, content: string}], type_id: number, estimate_forecast: null, custom_preconds: string, title: *, priority_id: number, status_id: number, case_id: *, estimate: string, assignedto_id: number, id}}
+ */
+function tr_test(options) {
+    const _id = increaser();
+    const _case_id = options && options.case_id || duration();
+    const _title = title();
+    const _run_id = options && options.run_id || increaser();
+    const _status_id = options && options.status_id || faker.random.arrayElement([1,4,5]);
+    return {
+        "assignedto_id": 1,
+        "case_id": _case_id,
+        "custom_expected": "..",
+        "custom_preconds": "..",
+        "custom_steps_separated": [
+            {
+                "content": "Step 1",
+                "expected": "Expected Result 1"
+            },
+            {
+                "content": "Step 2",
+                "expected": "Expected Result 2"
+            }
+        ],
+        "estimate": "1m 5s",
+        "estimate_forecast": null,
+        "id": _id,
+        "priority_id": 2,
+        "run_id": _run_id,
+        "status_id": _status_id,
+        "title": _title,
+        "type_id": 4
+    }
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number} options.plan_id
+ * @param {number} options.milestone_id
+ * @return {{updated_on: null, completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, created_by: number, url: string, config_ids: number[], blocked_count: number, created_on: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, plan_id: null}}
+ */
+function tr_run(options) {
+    const _id = increaser();
+    const _plan_id = options && options.plan_id || null;
+    const _milestone_id = options && options.milestone_id || null;
+    const _name = faker.random.words();
+    return {
+        "assignedto_id": 6,
+        "blocked_count": 0,
+        "completed_on": null,
+        "config": "Firefox, Ubuntu 12",
+        "config_ids": [
+            2,
+            6
+        ],
+        "created_by": 1,
+        "created_on": 1393845644,
+        "refs": "SAN-1",
+        "custom_status1_count": 0,
+        "custom_status2_count": 0,
+        "custom_status3_count": 0,
+        "custom_status4_count": 0,
+        "custom_status5_count": 0,
+        "custom_status6_count": 0,
+        "custom_status7_count": 0,
+        "description": null,
+        "failed_count": 2,
+        "id": _id,
+        "include_all": false,
+        "is_completed": false,
+        "milestone_id": _milestone_id,
+        "name": _name,
+        "passed_count": 2,
+        "plan_id": _plan_id,
+        "project_id": 1,
+        "retest_count": 1,
+        "suite_id": 6,
+        "untested_count": 3,
+        "updated_on": null,
+        "url": `http://testrail/index.php?/runs/view/${_id}`
+    }
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number} options.milestone_id
+ * @param {number} options.plan_id
+ * @param {number} options.runs_count
+ * @return {{include_all: boolean, refs: string, name: *, description: null, id: *, runs: [{completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id: number, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, url: string, config_ids: number[], blocked_count: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, entry_id: string, plan_id: number, entry_index: number}, {completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id: number, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, url: string, config_ids: number[], blocked_count: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, entry_id: string, plan_id: number, entry_index: number}], suite_id: number}}
+ * @private
+ */
+function _tr_entry(options) {
+    const _id = faker.random.uuid();
+    const _name = faker.random.words();
+    const len = options.runs_count || faker.random.arrayElement([1,2]);
+    const _plan_id = options.plan_id;
+    const _milestone_id = options.milestone_id;
+    const _runs = [];
+    for (let i = 0; i < len; i++) {_runs.push(tr_run({plan_id: _plan_id, milestone_id: _milestone_id}))}
+    return {
+        "id": _id,
+        "description": null,
+        "include_all": true,
+        "name": _name,
+        "runs": _runs,
+        "refs": "RF-1, RF-2",
+        "suite_id": 4
+    }
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number} options.milestone_id
+ * @param {number} options.entries_count
+ * @return {{custom_status2_count: number, completed_on: null, passed_count: number, custom_status7_count: number, milestone_id: number, description: null, custom_status4_count: number, custom_status3_count: number, created_by: number, is_completed: boolean, url: string, retest_count: number, custom_status5_count: number, blocked_count: number, entries: [{include_all: boolean, refs: string, name: string, description: null, id: string, runs: [{completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id: number, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, url: string, config_ids: number[], blocked_count: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, entry_id: string, plan_id: number, entry_index: number}, {completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id: number, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, url: string, config_ids: number[], blocked_count: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, entry_id: string, plan_id: number, entry_index: number}], suite_id: number}, {include_all: boolean, refs: string, name: string, description: null, id: string, runs: [{completed_on: null, milestone_id: number, description: null, custom_status3_count: number, is_completed: boolean, retest_count: number, custom_status5_count: number, project_id: number, id: number, suite_id: number, custom_status2_count: number, include_all: boolean, passed_count: number, custom_status7_count: number, custom_status4_count: number, url: string, config_ids: number[], blocked_count: number, refs: string, untested_count: number, name: string, assignedto_id: number, custom_status1_count: number, failed_count: number, custom_status6_count: number, config: string, entry_id: string, plan_id: number, entry_index: number}], suite_id: number}], created_on: number, project_id: number, untested_count: number, name: string, assignedto_id: null, custom_status1_count: number, failed_count: number, id, custom_status6_count: number}}
+ */
+function tr_plan(options) {
+    const _milestone_id = options && options.milestone_id || increaser();
+    const _id = increaser();
+    const _name = faker.random.words();
+    const len = options && options.entries_count || faker.random.arrayElement([1,2,3]);
+    const _entries = [];
+    for (let i=0; i<len; i++) {_entries.push(_tr_entry({plan_id: _id, milestone_id: _milestone_id}))}
+    return {
+        "assignedto_id": null,
+        "blocked_count": 2,
+        "completed_on": null,
+        "created_by": 1,
+        "created_on": 1393845644,
+        "custom_status1_count": 0,
+        "custom_status2_count": 0,
+        "custom_status3_count": 0,
+        "custom_status4_count": 0,
+        "custom_status5_count": 0,
+        "custom_status6_count": 0,
+        "custom_status7_count": 0,
+        "description": null,
+        "entries": _entries,
+        "failed_count": 2,
+        "id": _id,
+        "is_completed": false,
+        "milestone_id": _milestone_id,
+        "name": _name,
+        "passed_count": 5,
+        "project_id": 1,
+        "retest_count": 1,
+        "untested_count": 6,
+        "url": `http:///testrail/index.php?/plans/view/${_id}`
+    }
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number} options.id
+ * @param {string} options.name
+ * @return {{completed_on: null, project_id: number, refs: string, name: string, description: string, id: number, is_completed: boolean, due_on: number, url: string}}
+ */
+function tr_milestone(options) {
+    const _id = options && options.id || increaser();
+    const _name = options && options.name || faker.random.words();
+    return {
+        "completed_on": null,
+        "description": "...",
+        "due_on": 1391968184,
+        "id": _id,
+        "is_completed": false,
+        "name": _name,
+        "project_id": 1,
+        "refs": "RF-1, RF-2",
+        "url": `http:///testrail/index.php?/milestones/view/${_id}`
+    }
+}
+
+function count(start) {
+    let _count = start;
+    return function () {
+        _count++;
+        return _count;
+    }
 }

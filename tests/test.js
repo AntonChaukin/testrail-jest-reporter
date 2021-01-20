@@ -75,39 +75,43 @@ describe('Reporter tests', function (){
 
     describe('Reporter tests', function (){
 
-        it('Calling onRunStart without "project_id" console error', () => {
-            let reporter = new Reporter();
-            const spy = jest.spyOn(global.console, 'log');
-            reporter.onRunStart();
-            expect(spy).toHaveBeenCalledTimes(2);
-            spy.mockRestore();
+        describe('Calling onRunStart', function () {
+
+            it('without "project_id" console error', () => {
+                let reporter = new Reporter();
+                const spy = jest.spyOn(global.console, 'log');
+                reporter.onRunStart();
+                expect(spy).toHaveBeenCalledTimes(2);
+                spy.mockRestore();
+            });
+
+            it('with "project_id" call "get_tests" method', async () => {
+                let Caller = require('../lib/caller');
+                const spy = jest.spyOn(Caller.prototype, 'get_tests')
+                    .mockResolvedValue({ok: true});
+                let reporter = new Reporter(null, {project_id: 1});
+                await reporter.onRunStart();
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(reporter.tests).toEqual({ok: true});
+                spy.mockRestore();
+            });
+
         });
 
-        it('Calling onRunStart with "project_id" call "get_tests" method', async () => {
-            let Caller = require('../lib/caller');
-            const spy = jest.spyOn(Caller.prototype, 'get_tests')
-                .mockImplementationOnce(() => Promise.resolve({ok: true}));
-            let reporter = new Reporter(null, {project_id: 1});
-            await reporter.onRunStart();
-            expect(spy).toHaveBeenCalledTimes(1);
-            expect(reporter.tests).toEqual({ok: true});
-            spy.mockRestore();
-        });
+        describe('Calling onTestResult', function () {
 
-        it('Calling onTestResult without "tests" did nothing', async () => {
-            const accu_spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
-            const util_spy = jest.spyOn(Utils.prototype, 'formatCase');
-            let reporter = new Reporter();
-            await reporter.onTestResult();
-            expect(accu_spy).toHaveBeenCalledTimes(0);
-            expect(util_spy).toHaveBeenCalledTimes(0);
-            accu_spy.mockRestore();
-            util_spy.mockRestore();
-        });
+            it('Calling onTestResult without "tests" did nothing', async () => {
+                const accu_spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
+                const util_spy = jest.spyOn(Utils.prototype, 'formatCase');
+                let reporter = new Reporter();
+                await reporter.onTestResult();
+                expect(accu_spy).toHaveBeenCalledTimes(0);
+                expect(util_spy).toHaveBeenCalledTimes(0);
+                accu_spy.mockRestore();
+                util_spy.mockRestore();
+            });
 
-        describe('Calling onTestResult with "tests"', function () {
-
-            it('formatCase was called if case_id not specified in result.title', async () => {
+            it('With "tests": formatCase was called if case_id not specified in result.title', async () => {
                 const spy = jest.spyOn(Utils.prototype, 'formatCase');
                 let reporter = new Reporter();
                 reporter.tests = [{ok: true}];
@@ -118,7 +122,7 @@ describe('Reporter tests', function (){
                 spy.mockRestore();
             });
 
-            it('accumulateResults was not called if case_id not specified in result.title', async () => {
+            it('With "tests": accumulateResults was not called if case_id not specified in result.title', async () => {
                 const spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
                 let reporter = new Reporter();
                 reporter.tests = [{ok: true}];
@@ -128,7 +132,7 @@ describe('Reporter tests', function (){
                 spy.mockRestore();
             });
 
-            it('accumulateResults was called if case_id specified in result.title', async () => {
+            it('With "tests": accumulateResults was called if case_id specified in result.title', async () => {
                 const spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
                 let reporter = new Reporter();
                 let utils = new Utils();
@@ -141,7 +145,7 @@ describe('Reporter tests', function (){
                 spy.mockRestore();
             });
 
-            it('Accumulate results if result case_id present in tests', async () => {
+            it('With "tests": accumulate results if result case_id present in tests', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult = passed(true);
@@ -153,7 +157,7 @@ describe('Reporter tests', function (){
                 expect(reporter.results[0]).toHaveProperty('results', [testcase]);
             });
 
-            it('Accumulate results in single run', async () => {
+            it('With "tests": accumulate results in single run', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult_1 = passed(true);
@@ -167,7 +171,7 @@ describe('Reporter tests', function (){
                 expect(reporter.results[0]).toHaveProperty('results', [testcase_1, testcase_2]);
             });
 
-            it('Accumulate results in multiple run', async () => {
+            it('With "tests": accumulate results in multiple run', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult_1 = passed(true);
@@ -183,7 +187,7 @@ describe('Reporter tests', function (){
                 expect(reporter.results[1]).toHaveProperty('results', [testcase_2]);
             });
 
-            it('Do not accumulate result of test that case_id not present in tests', async () => {
+            it('With "tests": do not accumulate result of test that case_id not present in tests', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult_1 = passed(true);
@@ -203,7 +207,7 @@ describe('Reporter tests', function (){
             it('Calling add_results method', async () => {
                 let Caller = require('../lib/caller');
                 const spy = jest.spyOn(Caller.prototype, 'add_results')
-                    .mockImplementationOnce(() => Promise.resolve(false));
+                    .mockResolvedValue(false);
                 let reporter = new Reporter();
                 await reporter.onRunComplete();
                 expect(spy).toHaveBeenCalledTimes(1);
@@ -215,7 +219,7 @@ describe('Reporter tests', function (){
                 let Caller = require('../lib/caller');
                 const res_spy = jest.spyOn(Caller.prototype, 'add_results');
                 const err_spy = jest.spyOn(Caller.prototype, 'add_results_for_cases')
-                    .mockImplementationOnce(() => Promise.reject(new Error('Request rejected')));
+                    .mockRejectedValue(new Error('Request rejected'));
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult = passed(true);
