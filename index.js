@@ -5,7 +5,7 @@ const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
-const {regex} = require(configPath);
+const {regex, milestone} = require(configPath);
 const Utils = require('./lib/utils');
 const Caller = require('./lib/caller');
 
@@ -22,6 +22,7 @@ class CustomTestrailReporter {
         this._globalConfig = _globalConfig;
         this._options = _options || {};
         this._options.regex = regex || null;
+        this._options.milestone = this._options.milestone || milestone;
         this._caller = new Caller(this._options);
         this._utils = new Utils(this._options);
     }
