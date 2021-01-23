@@ -217,8 +217,9 @@ describe('Reporter tests', function (){
 
             it('Calling add_results method with error', async () => {
                 let Caller = require('../lib/caller');
-                const res_spy = jest.spyOn(Caller.prototype, 'add_results');
-                const err_spy = jest.spyOn(Caller.prototype, 'add_results_for_cases')
+                let Api = require('../lib/interface');
+                const caller_spy = jest.spyOn(Caller.prototype, 'add_results');
+                const api_spy = jest.spyOn(Api.prototype, 'add_results_for_cases')
                     .mockRejectedValue(new Error('Request rejected'));
                 let reporter = new Reporter();
                 let utils = new Utils();
@@ -227,10 +228,10 @@ describe('Reporter tests', function (){
                 const results = [{id: 1, results: [testcase]}];
                 reporter.results = results;
                 await reporter.onRunComplete();
-                expect(res_spy).toHaveBeenCalledTimes(1);
-                expect(res_spy).toHaveBeenCalledWith(results);
-                res_spy.mockRestore();
-                err_spy.mockRestore();
+                expect(caller_spy).toHaveBeenCalledTimes(1);
+                expect(caller_spy).toHaveBeenCalledWith(results);
+                caller_spy.mockRestore();
+                api_spy.mockRestore();
             });
         });
 
