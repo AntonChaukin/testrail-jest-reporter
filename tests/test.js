@@ -1,5 +1,6 @@
 const Utils = require('../lib/utils');
-const {passed, failed, pending, case_title, duration} = require('./sample');
+const {passed, failed, pending, case_title, duration, name,
+tr_milestone, tr_plan, tr_run, tr_test} = require('./sample');
 const Reporter = require('../index');
 
 describe('Reporter tests', function (){
@@ -205,7 +206,7 @@ describe('Reporter tests', function (){
         describe('Calling onRunComplete tests', function () {
 
             it('Calling add_results method', async () => {
-                let Caller = require('../lib/caller');
+                const Caller = require('../lib/caller');
                 const spy = jest.spyOn(Caller.prototype, 'add_results')
                     .mockResolvedValue(false);
                 let reporter = new Reporter();
@@ -216,11 +217,11 @@ describe('Reporter tests', function (){
             });
 
             it('Calling add_results method with error', async () => {
-                let Caller = require('../lib/caller');
-                let Api = require('../lib/interface');
+                const Caller = require('../lib/caller');
+                const api = require('../lib/test_interface');
+                jest.mock('../lib/test_interface');
                 const caller_spy = jest.spyOn(Caller.prototype, 'add_results');
-                const api_spy = jest.spyOn(Api.prototype, 'add_results_for_cases')
-                    .mockRejectedValue(new Error('Request rejected'));
+                api.add_results_for_cases.mockRejectedValue(new Error('Request rejected'));
                 let reporter = new Reporter();
                 let utils = new Utils();
                 const testResult = passed(true);
@@ -231,10 +232,63 @@ describe('Reporter tests', function (){
                 expect(caller_spy).toHaveBeenCalledTimes(1);
                 expect(caller_spy).toHaveBeenCalledWith(results);
                 caller_spy.mockRestore();
-                api_spy.mockRestore();
+                api.mockRestore();
             });
         });
 
+    });
+
+    describe('Caller tests', function () {
+        beforeEach(() => {
+
+        });
+        it('get_tests successful', async () => {
+            const caller = require('../lib/test_caller');
+            const api = require('../lib/test_interface');
+            jest.mock('../lib/test_interface');
+
+            let runs_len = 0;
+            const milestone_name = name();
+            caller.init({milestone: milestone_name, project_id: 1});
+            const milestone = tr_milestone({name: milestone_name});
+            const milestone_id = milestone.id;
+            const get_milestones_resp = [tr_milestone(), milestone];
+            const get_plan_resp = tr_plan({milestone_id: milestone_id});
+            const get_plans_resp = [Object.assign({}, get_plan_resp)];
+            for(let i=0, i_len = get_plan_resp.entries.length; i<i_len; i++) {
+                let entry = get_plan_resp.entries[i];
+                for(let j=0, j_len=entry.runs.length; j<j_len; j++) {runs_len++}
+            }
+            const run = tr_run({milestone_id: milestone_id});
+            const get_runs_resp = [run];
+            const case_1 = {'case_id': duration(), 'run_id': run.id};
+            const test_1 = tr_test(case_1);
+            api.get_milestones.mockResolvedValue(get_milestones_resp);
+            api.get_plans.mockResolvedValue(get_plans_resp);
+            api.get_plan.mockResolvedValue(get_plan_resp);
+            api.get_runs.mockResolvedValue(get_runs_resp);
+            api.get_tests.mockResolvedValue([test_1]);
+            await caller.get_tests();
+            expect(caller._tests).toEqual([case_1]);
+            expect(caller._runs_ids).toHaveLength(runs_len+1);
+            expect(caller._milestone_id).toEqual(milestone_id);
+            api.mockRestore();
+        });
+    });
+
+    it('test api', async() => {
+        const api = require('../lib/test_interface');
+        const caller = require('../lib/test_caller');
+        let utils = new Utils();
+        jest.mock('../lib/test_interface');
+        const resp = {data: 'users'};
+        //const api_spy = jest.spyOn(api.prototype, 'add_results_for_cases').mockResolvedValue(resp);
+        api.add_results_for_cases.mockResolvedValue(resp);
+        const testResult = passed(true);
+        const testcase = utils.formatCase(testResult);
+        const res = await caller.add_results([{id: 1, results: [testcase]}]);
+        console.log(res);
+        api.mockRestore();
     });
 
 });

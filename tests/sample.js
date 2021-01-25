@@ -7,6 +7,7 @@ module.exports = {
     pending: pending,
     duration: duration,
     case_title: case_title,
+    name: name,
     tr_test: tr_test,
     tr_run: tr_run,
     tr_plan: tr_plan,
@@ -68,6 +69,8 @@ function pending(cid) {
 }
 
 function title() {return faker.lorem.sentence()}
+
+function name() {return faker.random.words()}
 
 function case_title(duration, cid = true) {
     let string = [];

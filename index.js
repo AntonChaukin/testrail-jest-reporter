@@ -5,7 +5,7 @@ const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
-const {regex, milestone} = require(configPath);
+const {baseUrl, regex, milestone, project_id, user, pass} = require(configPath);
 const Utils = require('./lib/utils');
 const Caller = require('./lib/caller');
 
@@ -20,11 +20,13 @@ class CustomTestrailReporter {
      */
     constructor(_globalConfig, _options) {
         this._globalConfig = _globalConfig;
-        this._options = _options || {};
-        this._options.regex = regex || null;
-        this._options.milestone = this._options.milestone || milestone;
+        this._options = {};
+        this._options.milestone = _options && _options.milestone || milestone;
+        this._options.baseUrl = _options && _options.baseUrl || baseUrl;
+        this._options.project_id = _options && _options.project_id || project_id;
+        this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
         this._caller = new Caller(this._options);
-        this._utils = new Utils(this._options);
+        this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
     }
 
     /**
