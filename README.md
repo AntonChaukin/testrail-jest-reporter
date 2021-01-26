@@ -67,7 +67,7 @@ The **testrail.conf.js** file needs to be created in your project's root folder.
  - It must contain the URL of your TestRail server, username (email address) and password (or API key).
  - This file needs to have all 3 parameters correctly filled.
 ### Use TestRail Milestone
-In first version the Reporter needs you to use milestone.
+The first version of Reporter requires you to use a milestone.
  - Use TestRail Milestone to versioning your tests.
  - **testrail.conf.js** file needs to have Milestone name filled. Or <br>it can be specified in
 [Jest configuration](https://github.com/AntonChaukin/testrail-jest-reporter#jest-configurations)
@@ -128,7 +128,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 - Add new tests Run if there are testcases that are not present in any of the existing TestRail tests Runs.
 - Add new test Runs if the Milestone not specified.
 - Add new TestRail Milestone if the specified Milestone not present in the Project.
-- Also need to write more tests.
+- ~~Also need to write more tests.~~                                   >> **Done in 1.0.4**
 
 <br>**Version 2:**
 - Add the Reporter CLI.
