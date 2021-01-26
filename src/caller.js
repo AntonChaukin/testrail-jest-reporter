@@ -28,13 +28,20 @@ function add_results(testsResults) {
         ).then(response => {
                 let count = 0;
                 response.map(run => {
-                    if (run && run.status_id === 200 && util.isArray(run.body)) {
-                        run.body.map((result) => {
-                            if (result && result.id) count++;
-                        })
-                    }
-                    else if (run && run.status_id === 500) throw Error(run.error)
-                    else console.log(error(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`));
+                    if (run) {
+                        switch (run.statusCode) {
+                            case 200:
+                                if (util.isArray(run.body)) run.body.map((result) => {
+                                    if (result && result.id) count++;
+                                });
+                                break;
+                            case 500:
+                                throw Error(run.error);
+                            default:
+                                console.log(error(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`));
+                                break;
+                        }
+                    } else console.log(error(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`));
                 });
                 return count;
             })

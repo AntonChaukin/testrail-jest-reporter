@@ -1,4 +1,6 @@
 const Utils = require('../src/utils');
+const chalk = require('chalk');
+const error = chalk.bold.red;
 const {passed, failed, pending, case_title, duration, name,
 tr_milestone, tr_plan, tr_run, tr_test, tr_result} = require('./sample');
 const Reporter = require('../index');
@@ -624,7 +626,7 @@ describe('Reporter tests', function (){
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
-            const resp = {status_id: 200, body: [tr_result(testcase)]};
+            const resp = {statusCode: 200, body: [tr_result(testcase)]};
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockResolvedValueOnce(resp);
@@ -638,11 +640,12 @@ describe('Reporter tests', function (){
         it('add_results add_results_for_cases return error', async() => {
             const api = require('../src/interface');
             const caller = require('../src/caller');
+            const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
             const err = new Error('Request rejected');
-            const resp = {status_id: 500, error: err};
+            const resp = {statusCode: 500, error: err};
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockResolvedValueOnce(resp);
@@ -651,22 +654,28 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
+            expect(console_spy).toHaveBeenCalledWith(error("Error: "+err));
+            console_spy.mockRestore();
         });
 
         it('add_results add_results_for_cases rejected', async() => {
             const api = require('../src/interface');
             const caller = require('../src/caller');
+            const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
+            const err = new Error('Request rejected');
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
-                .mockRejectedValue(new Error('Request rejected'));
+                .mockRejectedValue(err);
 
             const res = await caller.add_results([{id: 1, results: [testcase]}]);
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
+            expect(console_spy).toHaveBeenCalledWith(error(err));
+            console_spy.mockRestore()
         });
 
         it('add_results add_results_for_cases return empty', async() => {
@@ -677,7 +686,7 @@ describe('Reporter tests', function (){
             const testcase = utils.formatCase(testResult);
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
-                .mockResolvedValue({status_id: 200, body: [{}]});
+                .mockResolvedValue({statusCode: 200, body: [{}]});
 
             const res = await caller.add_results([{id: 1, results: [testcase]}]);
             add_results_for_cases_spy.mockRestore();
@@ -688,6 +697,7 @@ describe('Reporter tests', function (){
         it('add_results add_results_for_cases return undefined', async() => {
             const api = require('../src/interface');
             const caller = require('../src/caller');
+            const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
@@ -699,6 +709,8 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
+            expect(console_spy).toHaveBeenCalledWith(error("TestRail API add_results_for_cases resolved undefined"));
+            console_spy.mockRestore()
         });
 
     });
