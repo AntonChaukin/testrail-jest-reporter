@@ -6,8 +6,8 @@ const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
 const {baseUrl, regex, milestone, project_id, user, pass} = require(configPath);
-const Utils = require('./lib/utils');
-const caller = require('./lib/caller');
+const Utils = require('./src/utils');
+const caller = require('./src/caller');
 
 class CustomTestrailReporter {
     tests = null

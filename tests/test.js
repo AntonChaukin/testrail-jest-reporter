@@ -1,4 +1,4 @@
-const Utils = require('../lib/utils');
+const Utils = require('../src/utils');
 const {passed, failed, pending, case_title, duration, name,
 tr_milestone, tr_plan, tr_run, tr_test, tr_result} = require('./sample');
 const Reporter = require('../index');
@@ -88,7 +88,7 @@ describe('Reporter tests', function (){
 
             it('with "project_id" call "get_tests" method', async () => {
                 const reporter = new Reporter(null, {project_id: 1});
-                const caller = require('../lib/caller');
+                const caller = require('../src/caller');
                 const spy = jest.spyOn(caller, 'get_tests')
                     .mockResolvedValue({ok: true});
 
@@ -208,7 +208,7 @@ describe('Reporter tests', function (){
         describe('Calling onRunComplete tests', function () {
 
             it('Calling add_results method', async () => {
-                const caller = require('../lib/caller');
+                const caller = require('../src/caller');
                 const spy = jest.spyOn(caller, 'add_results')
                     .mockResolvedValueOnce(false);
                 const reporter = new Reporter();
@@ -221,8 +221,8 @@ describe('Reporter tests', function (){
             });
 
             it('Calling add_results method with error', async () => {
-                const caller = require('../lib/caller');
-                const api = require('../lib/interface');
+                const caller = require('../src/caller');
+                const api = require('../src/interface');
                 const reporter = new Reporter();
                 const utils = new Utils();
                 const testResult = passed(true);
@@ -270,8 +270,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests successful', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -295,8 +295,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_milestones rejected', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -319,8 +319,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_plans rejected', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -343,8 +343,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_plan rejected', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -367,8 +367,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_runs rejected', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -388,8 +388,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_tests rejected', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -410,8 +410,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if milestone_name undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: undefined, project_id: 1});
 
@@ -434,8 +434,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if project_id undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: undefined});
 
@@ -460,8 +460,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_plans return undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -484,8 +484,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_plans return empty', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -507,8 +507,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_plan return undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -531,8 +531,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_runs return undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -554,8 +554,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_runs return empty', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -577,8 +577,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_tests return empty', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -598,8 +598,8 @@ describe('Reporter tests', function (){
         });
 
         it('get_tests if get_tests return undefined', async () => {
-            const caller = require('../lib/caller');
-            const api = require('../lib/interface');
+            const caller = require('../src/caller');
+            const api = require('../src/interface');
 
             caller.init({milestone: milestone_name, project_id: 1});
 
@@ -619,8 +619,8 @@ describe('Reporter tests', function (){
         });
 
         it('add_results successful', async() => {
-            const api = require('../lib/interface');
-            const caller = require('../lib/caller');
+            const api = require('../src/interface');
+            const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
@@ -636,8 +636,8 @@ describe('Reporter tests', function (){
         });
 
         it('add_results add_results_for_cases return error', async() => {
-            const api = require('../lib/interface');
-            const caller = require('../lib/caller');
+            const api = require('../src/interface');
+            const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
@@ -654,8 +654,8 @@ describe('Reporter tests', function (){
         });
 
         it('add_results add_results_for_cases rejected', async() => {
-            const api = require('../lib/interface');
-            const caller = require('../lib/caller');
+            const api = require('../src/interface');
+            const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
@@ -670,8 +670,8 @@ describe('Reporter tests', function (){
         });
 
         it('add_results add_results_for_cases return empty', async() => {
-            const api = require('../lib/interface');
-            const caller = require('../lib/caller');
+            const api = require('../src/interface');
+            const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
@@ -686,8 +686,8 @@ describe('Reporter tests', function (){
         });
 
         it('add_results add_results_for_cases return undefined', async() => {
-            const api = require('../lib/interface');
-            const caller = require('../lib/caller');
+            const api = require('../src/interface');
+            const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed(true);
             const testcase = utils.formatCase(testResult);
