@@ -1,6 +1,6 @@
 {
   "name": "testrail-jest-reporter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Custom Jest reporter for Testrail synchronization",
   "main": "index.js",
   "engines": {
