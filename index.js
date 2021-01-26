@@ -7,7 +7,7 @@ const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
 const {baseUrl, regex, milestone, project_id, user, pass} = require(configPath);
 const Utils = require('./lib/utils');
-const Caller = require('./lib/caller');
+const caller = require('./lib/caller');
 
 class CustomTestrailReporter {
     tests = null
@@ -25,7 +25,7 @@ class CustomTestrailReporter {
         this._options.baseUrl = _options && _options.baseUrl || baseUrl;
         this._options.project_id = _options && _options.project_id || project_id;
         this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
-        this._caller = new Caller(this._options);
+        caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
     }
 
@@ -38,7 +38,7 @@ class CustomTestrailReporter {
      */
     onRunStart(_results, _options) {
         if (this._options.project_id) {
-            this._caller.get_tests()
+            caller.get_tests()
                 .then(_tests => this.tests = _tests);
         }
         else {
@@ -82,7 +82,7 @@ class CustomTestrailReporter {
      * @param {JestTestRunResult} _results - Results from the test run
      */
     onRunComplete(_contexts, _results) {
-        this._caller.add_results(this.results)
+        caller.add_results(this.results)
             .then(count => {
                 if (count) console
                     .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));

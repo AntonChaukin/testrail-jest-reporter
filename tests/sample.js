@@ -8,6 +8,7 @@ module.exports = {
     duration: duration,
     case_title: case_title,
     name: name,
+    tr_result: tr_result,
     tr_test: tr_test,
     tr_run: tr_run,
     tr_plan: tr_plan,
@@ -91,6 +92,39 @@ function index() {
 
 function duration() {
     return faker.random.number({min: 100, max: 99999});
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {string} options.comment
+ * @param {string} options.elapsed
+ * @param {number} options.status_id
+ * @return {{elapsed: string, status_id: number, created_on: number, defects: string, assignedto_id: number, comment: string, id: number, created_by: number, custom_step_results: [{}, {}], version: string, test_id: number}}
+ */
+function tr_result(options) {
+    const _id = increaser();
+    const _comment = options && options.comment || title();
+    const _elapsed = options && options.elapsed || "5m";
+    const _status_id = options && options.status_id || faker.random.arrayElement([1,4,5]);
+    const _created_on = new Date().getTime();
+    return {
+        "assignedto_id": 1,
+        "comment": _comment,
+        "created_by": 1,
+        "created_on": _created_on,
+        "custom_step_results": [
+            {},
+            {}
+        ],
+        "defects": "",
+        "elapsed": _elapsed,
+        "id": _id,
+        "status_id": _status_id,
+        "test_id": duration(),
+        "version": ""
+}
+
 }
 
 /**
