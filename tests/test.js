@@ -1,4 +1,4 @@
-const Utils = require('../src/utils');
+const Utils = require('../src/utils'), ReporterError = require('../src/error');
 const chalk = require('chalk');
 const error = chalk.bold.red;
 const {passed, failed, pending, case_title, duration, name,
@@ -656,6 +656,54 @@ describe('Reporter tests', function (){
             expect(res).toEqual(1);
         });
 
+        it('add_results with wrong results: array', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const testcase = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: [testcase]}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
+        it('add_results with wrong results: object', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: testcase}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
+        it('add_results with wrong results: not an object', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: [testcase, 'test']}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
         it('add_results add_results_for_cases return error', async() => {
             const api = require('../src/interface');
             const caller = require('../src/caller');
@@ -673,7 +721,7 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
-            expect(console_spy).toHaveBeenCalledWith(error("Error: "+err));
+            expect(console_spy).toHaveBeenCalledWith(error("Testrail Jest Reporter Error: "+err));
             console_spy.mockRestore();
         });
 
@@ -718,6 +766,7 @@ describe('Reporter tests', function (){
             const caller = require('../src/caller');
             const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
+            const err = new ReporterError("TestRail API add_results_for_cases resolved undefined");
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
 
@@ -728,7 +777,7 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
-            expect(console_spy).toHaveBeenCalledWith(error("TestRail API add_results_for_cases resolved undefined"));
+            expect(console_spy).toHaveBeenCalledWith(error(err));
             console_spy.mockRestore()
         });
 

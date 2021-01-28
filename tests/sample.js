@@ -86,7 +86,11 @@ function pending(cid) {
 
 function title() {return faker.lorem.sentence()}
 
-function name() {return faker.random.words()}
+function name() {
+    let _name = faker.random.words();
+    if (_name.length < 3) _name += name();
+    return _name.slice(0,16);
+}
 
 function case_title(duration, cid = true) {
     let string = [];
