@@ -68,7 +68,7 @@ The **testrail.conf.js** file needs to be created in your project's root folder.
  - This file needs to have all 2 parameters correctly filled.
  - It may contain the URL of your TestRail server as a `baseUrl` parameter, or <br>it can be specified in
    [Jest configuration](https://github.com/AntonChaukin/testrail-jest-reporter#jest-configurations)
- - You can specify custom regex expresion _(default: `/[?\d]{3,6}/gm`)_
+ - You can specify custom regex expresion _(default: `/[C][?\d]{3,6}/gm`)_
 ### Use TestRail Milestone
 The first version of the Reporter requires you to use a milestone.
  - Use TestRail Milestone to versioning your tests.
@@ -82,7 +82,7 @@ module.exports = {
     'user': 'user@example.com',
     'pass': 'some-password',
     'milestone': '<milestone_name>',
-    'regex': /[?\d]{3,6}/gm
+    'regex': /[C][?\d]{3,6}/gm
 }
 ```
 
@@ -105,6 +105,7 @@ then The Reporter push the test result only to one of that Runs.
 
 The Case ID from TestRail may be added to **_it()_** description 
 each test result you want to push to TestRail.
+You can specify several cases in one **_it()_** description.
 #### Usage
 ```javascript
 describe("Tests suite", () => {
@@ -113,7 +114,7 @@ describe("Tests suite", () => {
     expect(1).toBe(1);
   });
 
-  it("Test fail C124", async () => {
+  it("Test fail C124 C125", async () => {
     expect(1).toBe(0);
   });
 
@@ -133,6 +134,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 - Add new test Runs if the Milestone not specified.
 - Add new TestRail Milestone if the specified Milestone not present in the Project.
 - ~~Also need to write more tests.~~                                   >> **Done in 1.0.4**
+- ~~Added ability to specify several case_ids in one test description~~ >> **Done in 1.0.6**
 
 <br>**Version 2:**
 - Add the Reporter CLI.
