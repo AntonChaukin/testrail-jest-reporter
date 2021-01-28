@@ -13,7 +13,7 @@ describe('Reporter tests', function (){
             const utils = new Utils();
             const _duration = duration();
             let [case_id] = utils._formatTitle(case_title(_duration,true));
-            expect(parseInt(case_id.slice(1))).toEqual(_duration);
+            expect(parseInt(case_id)).toEqual(_duration);
         });
 
         it('Should parse several case id from test title', () => {
@@ -21,8 +21,8 @@ describe('Reporter tests', function (){
             const duration_1 = duration();
             const duration_2 = duration();
             let [case_id_1, case_id_2] = utils._formatTitle(case_title([duration_1, duration_2],true));
-            expect(parseInt(case_id_1.slice(1))).toEqual(duration_1);
-            expect(parseInt(case_id_2.slice(1))).toEqual(duration_2);
+            expect(parseInt(case_id_1)).toEqual(duration_1);
+            expect(parseInt(case_id_2)).toEqual(duration_2);
         });
 
         it('Should parse elapsed time from test duration', () => {

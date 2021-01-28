@@ -23,7 +23,7 @@ class Utils {
                 + '\n' + message;
             for (let i=0, len = cases_ids.length; i<len; i++) {
                 cases.push({
-                    "case_id": parseInt(cases_ids[i].slice(1)),
+                    "case_id": parseInt(cases_ids[i]),
                     "status_id": status_id,
                     "comment": comment,
                     "elapsed": elapsed || "",
@@ -59,8 +59,13 @@ class Utils {
 
     _formatTitle(title) {
         const regex = this._regex;
-        const _t = title.match(regex);
-        return _t;
+        const case_ids = [];
+        let _t = title.match(regex);
+        _t = _t || [];
+        for (let i=0, len=_t.length; i<len; i++) {
+            case_ids.push(_t[i].match(/[?\d]{3,6}/gm))
+        }
+        return case_ids.length && case_ids;
     }
 
     forEach(obj, fn) {
