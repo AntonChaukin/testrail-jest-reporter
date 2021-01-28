@@ -68,8 +68,8 @@ class CustomTestrailReporter {
     onTestResult(_test, _testResults, _aggregatedResult) {
         if (this.tests) {
             _testResults.testResults.forEach((result) => {
-                const testcase = this._utils.formatCase(result);
-                if (testcase) this._accumulateResults(testcase);
+                const testcases = this._utils.formatCase(result);
+                if (testcases) this._accumulateResults(testcases);
             });
         }
     }
@@ -94,13 +94,15 @@ class CustomTestrailReporter {
             return new Error('Testrail Jest Reporter reported an error');
         }
     }
-    _accumulateResults(testcase) {
-        let index = -1;
-        const test = this.tests.find(test => test.case_id === testcase.case_id);
-        const run_id = test && test.run_id;
-        if (run_id && !!this.results.length) index = this.results.findIndex(run => run.id === run_id);
-        if (~index) this.results[index].results.push(testcase);
-        else if (run_id) this.results.push({id: run_id, "results": [testcase]});
+    _accumulateResults(testcases_list) {
+        for (let i=0, len = testcases_list.length; i<len; i++) {
+            let index = -1;
+            const test = this.tests.find(test => test.case_id === testcases_list[i].case_id);
+            const run_id = test && test.run_id;
+            if (run_id && !!this.results.length) index = this.results.findIndex(run => run.id === run_id);
+            if (~index) this.results[index].results.push(testcases_list[i]);
+            else if (run_id) this.results.push({id: run_id, "results": [testcases_list[i]]});
+        }
     }
 }
 

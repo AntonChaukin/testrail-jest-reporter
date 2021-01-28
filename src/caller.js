@@ -1,6 +1,7 @@
 'use strict';
-const chalk = require('chalk'), tr_api = require('./interface'), Utils = require('./utils');
-const error = chalk.bold.red, warning = chalk.keyword('orange');
+const chalk = require('chalk'), tr_api = require('./interface'), Utils = require('./utils'),
+ReporterError = require('./error');
+const error = chalk.bold.red;
 const util = new Utils();
 
 module.exports = {
@@ -19,13 +20,25 @@ function init(_options) {
 
 function add_results(testsResults) {
         if (!util.isArray(testsResults)) {
-            console.log(error(`! Testrail Jest Reporter Error !`));
-            console.log(warning(`Something was wrong with tests results! \n\nContexts: ${JSON.stringify(testsResults)}`));
-            return Promise.resolve(false);
+            throw new ReporterError(`Something was wrong with tests results! 
+                \n\nContexts: ${JSON.stringify(testsResults)}`);
         }
         return Promise.all(
-            testsResults.map(run => tr_api.add_results_for_cases(run.id, {"results": run.results}))
-        ).then(response => {
+            testsResults.map(run => {
+                if (!util.isArray(run.results)) {
+                    throw new ReporterError(`The Run results is not an array! 
+                        \n\n Context: ${JSON.stringify(run.results)}`);
+                }
+                for(let i=0, len=run.results.length; i<len; i++) {
+                    if (!util.isPlainObject(run.results[i])) {
+                        throw new ReporterError(`Something was wrong with the Run results! 
+                        \n\n Context: ${JSON.stringify(run.results)}`);
+                    }
+                }
+                return tr_api.add_results_for_cases(run.id, {"results": run.results});
+            })
+        )
+            .then(response => {
                 let count = 0;
                 response.map(run => {
                     if (run) {
@@ -36,12 +49,11 @@ function add_results(testsResults) {
                                 });
                                 break;
                             case 500:
-                                throw Error(run.error);
+                                throw new ReporterError(run.error);
                             default:
-                                console.log(error(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`));
-                                break;
+                                throw new ReporterError(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`);
                         }
-                    } else console.log(error(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`));
+                    } else throw new ReporterError(`TestRail API add_results_for_cases resolved ${JSON.stringify(run)}`);
                 });
                 return count;
             })
@@ -60,7 +72,7 @@ function get_tests() {
             let _milestone = null;
             if (res && util.isArray(res)) {
                 _milestone = res.filter((milestone) => milestone.name === this._milestone_name);
-            } else console.log(error(`TestRail API get_milestones resolved ${JSON.stringify(res)}`));
+            } else throw new ReporterError(`TestRail API get_milestones resolved ${JSON.stringify(res)}`);
 
             if (_milestone && !!_milestone.length) {
                 this._milestone_id = _milestone[0].id;
@@ -72,11 +84,11 @@ function get_tests() {
             if (res && util.isArray(res)) {
                 return Promise.all(res.map(plan => tr_api.get_plan(plan.id)));
             }
-            else if (this._milestone_id) console.log(error(`TestRail API get_plans resolved ${JSON.stringify(res)}`));
+            else if (this._milestone_id) throw new ReporterError(`TestRail API get_plans resolved ${JSON.stringify(res)}`);
             return false;
         })
         .catch((err) => {
-            console.log(error(err));
+            console.log(error(err.stack));
             return false;
         })
         .then(res => {
@@ -95,7 +107,7 @@ function get_tests() {
             return false;
         })
         .catch((err) => {
-            console.log(error(err));
+            console.log(error(err.stack));
             return false;
         })
         .then(res => {
@@ -124,12 +136,11 @@ function get_tests() {
                     .filter((test, i, arr) => !arr.slice(i+1).find(t => t.case_id === test.case_id));
                 return this._tests;
             }
-            console.log(error(`! Testrail Jest Reporter Error !`));
-            console.log(warning(`There is no one Testrail testcase was finding in Project ${this._project_id} by milestone ${this._milestone_name}`));
-            return false;
+            throw new ReporterError(`There is no one Testrail testcase was finding in Project id=${this._project_id} 
+                by milestone "${this._milestone_name}"`);
         })
         .catch((err) => {
-            console.log(error(err));
+            console.log(error(err.stack));
             return false;
         });
 }

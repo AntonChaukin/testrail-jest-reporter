@@ -1,4 +1,4 @@
-const Utils = require('../src/utils');
+const Utils = require('../src/utils'), ReporterError = require('../src/error');
 const chalk = require('chalk');
 const error = chalk.bold.red;
 const {passed, failed, pending, case_title, duration, name,
@@ -12,8 +12,17 @@ describe('Reporter tests', function (){
         it('Should parse case id from test title', () => {
             const utils = new Utils();
             const _duration = duration();
-            let case_id = utils._formatTitle(case_title(_duration,true));
-            expect(parseInt(case_id)).toEqual(_duration);
+            let [case_id] = utils._formatTitle(case_title(_duration,true));
+            expect(parseInt(case_id.slice(1))).toEqual(_duration);
+        });
+
+        it('Should parse several case id from test title', () => {
+            const utils = new Utils();
+            const duration_1 = duration();
+            const duration_2 = duration();
+            let [case_id_1, case_id_2] = utils._formatTitle(case_title([duration_1, duration_2],true));
+            expect(parseInt(case_id_1.slice(1))).toEqual(duration_1);
+            expect(parseInt(case_id_2.slice(1))).toEqual(duration_2);
         });
 
         it('Should parse elapsed time from test duration', () => {
@@ -24,23 +33,33 @@ describe('Reporter tests', function (){
 
         it('Should parse Jest passed result with cid', () => {
             const utils = new Utils();
-            const testResult = passed(true);
-            let _case = utils.formatCase(testResult);
+            const testResult = passed();
+            let [_case] = utils.formatCase(testResult);
             expect(_case.status_id).toEqual(1);
             expect(_case.comment.includes('passed')).toBeTruthy();
             expect(_case.case_id).toEqual(testResult.duration);
         });
 
+        it('Should parse Jest passed result with several cid', () => {
+            const utils = new Utils();
+            const testResult = passed({cid: true, cid_count: 2});
+            let [case_1, case_2] = utils.formatCase(testResult);
+            expect(case_1.status_id).toEqual(1);
+            expect(case_2.status_id).toEqual(1);
+            expect(case_1.comment.includes('passed')).toBeTruthy();
+            expect(case_1.case_id).toEqual(testResult.duration);
+        });
+
         it('Return false if Jest result without cid', () => {
             const utils = new Utils();
-            let _case = utils.formatCase(passed(false));
+            let _case = utils.formatCase(passed({cid: false}));
             expect(_case).toBeFalsy();
         });
 
         it('Should parse Jest failed result with cid', () => {
             const utils = new Utils();
             const testResult = failed(true);
-            let _case = utils.formatCase(testResult);
+            let [_case] = utils.formatCase(testResult);
             expect(_case.status_id).toEqual(5);
             expect(_case.comment.includes('Error')).toBeTruthy();
             expect(_case.case_id).toEqual(testResult.duration);
@@ -48,7 +67,7 @@ describe('Reporter tests', function (){
 
         it('Should parse Jest pending result with cid', () => {
             const utils = new Utils();
-            let _case = utils.formatCase(pending(true));
+            let [_case] = utils.formatCase(pending(true));
             expect(_case.status_id).toEqual(4); // default pending status_id
             expect(_case.comment.includes('pending')).toBeTruthy();
             expect(_case.case_id).toBeTruthy();
@@ -120,7 +139,7 @@ describe('Reporter tests', function (){
                 const spy = jest.spyOn(Utils.prototype, 'formatCase');
                 let reporter = new Reporter();
                 reporter.tests = [{ok: true}];
-                const testResult = passed(false);
+                const testResult = passed({cid: false});
                 await reporter.onTestResult(null, {testResults: [testResult]},null);
                 expect(spy).toHaveBeenCalledTimes(1);
                 expect(spy).toHaveBeenCalledWith(testResult);
@@ -131,7 +150,7 @@ describe('Reporter tests', function (){
                 const spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
                 let reporter = new Reporter();
                 reporter.tests = [{ok: true}];
-                const testResult = passed(false);
+                const testResult = passed({cid: false});
                 await reporter.onTestResult(null, {testResults: [testResult]},null);
                 expect(spy).toHaveBeenCalledTimes(0);
                 spy.mockRestore();
@@ -142,19 +161,19 @@ describe('Reporter tests', function (){
                 let reporter = new Reporter();
                 let utils = new Utils();
                 reporter.tests = [{ok: true}];
-                const testResult = passed(true);
-                const testcase = utils.formatCase(testResult);
+                const testResult = passed();
+                const testcase_list = utils.formatCase(testResult);
                 await reporter.onTestResult(null, {testResults: [testResult]},null);
                 expect(spy).toHaveBeenCalledTimes(1);
-                expect(spy).toHaveBeenCalledWith(testcase);
+                expect(spy).toHaveBeenCalledWith(testcase_list);
                 spy.mockRestore();
             });
 
             it('With "tests": accumulate results if result case_id present in tests', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
-                const testResult = passed(true);
-                const testcase = utils.formatCase(testResult);
+                const testResult = passed();
+                const [testcase] = utils.formatCase(testResult);
                 reporter.tests = [{case_id: testResult.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult]},null);
                 expect(reporter.results).toHaveLength(1);
@@ -165,10 +184,10 @@ describe('Reporter tests', function (){
             it('With "tests": accumulate results in single run', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
-                const testResult_1 = passed(true);
+                const testResult_1 = passed();
                 const testResult_2 = failed(true);
-                const testcase_1 = utils.formatCase(testResult_1);
-                const testcase_2 = utils.formatCase(testResult_2);
+                const [testcase_1] = utils.formatCase(testResult_1);
+                const [testcase_2] = utils.formatCase(testResult_2);
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}, {case_id: testResult_2.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(1);
@@ -179,10 +198,10 @@ describe('Reporter tests', function (){
             it('With "tests": accumulate results in multiple run', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
-                const testResult_1 = passed(true);
+                const testResult_1 = passed();
                 const testResult_2 = failed(true);
-                const testcase_1 = utils.formatCase(testResult_1);
-                const testcase_2 = utils.formatCase(testResult_2);
+                const [testcase_1] = utils.formatCase(testResult_1);
+                const [testcase_2] = utils.formatCase(testResult_2);
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}, {case_id: testResult_2.duration, run_id: 2}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(2);
@@ -195,9 +214,9 @@ describe('Reporter tests', function (){
             it('With "tests": do not accumulate result of test that case_id not present in tests', async () => {
                 let reporter = new Reporter();
                 let utils = new Utils();
-                const testResult_1 = passed(true);
+                const testResult_1 = passed();
                 const testResult_2 = failed(true);
-                const testcase_1 = utils.formatCase(testResult_1);
+                const [testcase_1] = utils.formatCase(testResult_1);
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(1);
@@ -227,8 +246,8 @@ describe('Reporter tests', function (){
                 const api = require('../src/interface');
                 const reporter = new Reporter();
                 const utils = new Utils();
-                const testResult = passed(true);
-                const testcase = utils.formatCase(testResult);
+                const testResult = passed();
+                const [testcase] = utils.formatCase(testResult);
                 const results = [{id: 1, results: [testcase]}];
                 reporter.results = results;
                 const caller_spy = jest.spyOn(caller, 'add_results');
@@ -624,8 +643,8 @@ describe('Reporter tests', function (){
             const api = require('../src/interface');
             const caller = require('../src/caller');
             let utils = new Utils();
-            const testResult = passed(true);
-            const testcase = utils.formatCase(testResult);
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
             const resp = {statusCode: 200, body: [tr_result(testcase)]};
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
@@ -637,13 +656,61 @@ describe('Reporter tests', function (){
             expect(res).toEqual(1);
         });
 
+        it('add_results with wrong results: array', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const testcase = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: [testcase]}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
+        it('add_results with wrong results: object', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: testcase}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
+        it('add_results with wrong results: not an object', async() => {
+            const caller = require('../src/caller');
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            let resp = null;
+
+            try {
+                resp =await caller.add_results([{id: 1, results: [testcase, 'test']}]);
+            }
+            catch (err) {
+                expect(err.name).toEqual('Testrail Jest Reporter Error');
+            }
+            expect(resp).toBeFalsy();
+        });
+
         it('add_results add_results_for_cases return error', async() => {
             const api = require('../src/interface');
             const caller = require('../src/caller');
             const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
-            const testResult = passed(true);
-            const testcase = utils.formatCase(testResult);
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
             const err = new Error('Request rejected');
             const resp = {statusCode: 500, error: err};
 
@@ -654,7 +721,7 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
-            expect(console_spy).toHaveBeenCalledWith(error("Error: "+err));
+            expect(console_spy).toHaveBeenCalledWith(error("Testrail Jest Reporter Error: "+err));
             console_spy.mockRestore();
         });
 
@@ -664,8 +731,8 @@ describe('Reporter tests', function (){
             const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
             const err = new Error('Request rejected');
-            const testResult = passed(true);
-            const testcase = utils.formatCase(testResult);
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockRejectedValue(err);
@@ -682,8 +749,8 @@ describe('Reporter tests', function (){
             const api = require('../src/interface');
             const caller = require('../src/caller');
             let utils = new Utils();
-            const testResult = passed(true);
-            const testcase = utils.formatCase(testResult);
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockResolvedValue({statusCode: 200, body: [{}]});
@@ -699,8 +766,9 @@ describe('Reporter tests', function (){
             const caller = require('../src/caller');
             const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
-            const testResult = passed(true);
-            const testcase = utils.formatCase(testResult);
+            const err = new ReporterError("TestRail API add_results_for_cases resolved undefined");
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
 
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockResolvedValue(undefined);
@@ -709,7 +777,7 @@ describe('Reporter tests', function (){
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
-            expect(console_spy).toHaveBeenCalledWith(error("TestRail API add_results_for_cases resolved undefined"));
+            expect(console_spy).toHaveBeenCalledWith(error(err));
             console_spy.mockRestore()
         });
 

@@ -1,4 +1,5 @@
-const faker = require('faker');
+const faker = require('faker'), Utils = require('../src/utils');
+const utils = new Utils();
 const increaser = count(5);
 
 module.exports = {
@@ -15,14 +16,28 @@ module.exports = {
     tr_milestone: tr_milestone
 };
 
-function passed(cid) {
-    const _duration = duration();
-    const _case_title = case_title(_duration, cid);
+/**
+ *
+ * @param {object} options
+ * @param {boolean} options.cid
+ * @param {number} options.cid_count
+ * @return {{duration: *, failureMessages: [], fullName: string, location: null, numPassingAsserts: number, title: (string|*), ancestorTitles: [string], status: string}}
+ */
+function passed(options) {
+    options = options || {cid: true, cid_count: 1};
+    const count = options.cid_count || 1;
+    const _duration = [];
+    let i = 0;
+    do {
+        i++;
+        _duration.push(duration());
+    } while (i<count)
+    const _case_title = case_title(_duration, options.cid);
     return {
         "ancestorTitles": [
             "Reporter tests"
         ],
-        "duration": _duration,
+        "duration": _duration[0],
         "failureMessages": [],
         "fullName": "Reporter tests "+_case_title,
         "location": null,
@@ -71,15 +86,24 @@ function pending(cid) {
 
 function title() {return faker.lorem.sentence()}
 
-function name() {return faker.random.words()}
+function name() {
+    let _name = faker.random.words();
+    if (_name.length < 3) _name += name();
+    return _name.slice(0,16);
+}
 
 function case_title(duration, cid = true) {
     let string = [];
     const _title = title();
     if (cid) {
-        const _index = index();
-        string.push(_title.slice(0,_index));
-        string.push('C'+ duration);
+        duration  = utils.isArray(duration) ? duration : [duration];
+        let _index = 0;
+        for (let i=0, len=duration.length; i<len; i++) {
+            const start = _index;
+            _index += index();
+            string.push(_title.slice(start,_index));
+            string.push('C'+ duration[i]);
+        }
         string.push(_title.slice(_index));
         return string.join(' ');
     }

@@ -2,7 +2,7 @@
 
 class Utils {
     constructor(_options) {
-        this._regex = _options && _options.regex || /[?\d]{3,6}/gm;
+        this._regex = _options && _options.regex || /[C][?\d]{3,6}/gm;
         this._statuses = _options && _options.statuses || {};
         this._status = {
             "failed": 5,
@@ -12,22 +12,26 @@ class Utils {
     }
 
     formatCase(testResult) {
-        const case_id = this._formatTitle(testResult.title);
-        if (case_id) {
+        let cases = [];
+        const cases_ids = this._formatTitle(testResult.title);
+        if (cases_ids) {
             const message = !!testResult.failureMessages.length ? testResult.failureMessages : `**${testResult.status}**`;
             const elapsed = this._formatTime(testResult.duration);
             const status_id = this._status[testResult.status];
             const comment = `#${testResult.ancestorTitles}#`
                 + '\n' + testResult.title
                 + '\n' + message;
-            return {
-                "case_id": parseInt(case_id),
-                "status_id": status_id,
-                "comment": comment,
-                "elapsed": elapsed || "",
-                "defects": "",
-                "version": "",
+            for (let i=0, len = cases_ids.length; i<len; i++) {
+                cases.push({
+                    "case_id": parseInt(cases_ids[i].slice(1)),
+                    "status_id": status_id,
+                    "comment": comment,
+                    "elapsed": elapsed || "",
+                    "defects": "",
+                    "version": "",
+                })
             }
+            return cases;
         }
         return false;
     }
@@ -56,7 +60,7 @@ class Utils {
     _formatTitle(title) {
         const regex = this._regex;
         const _t = title.match(regex);
-        return _t && _t[0];
+        return _t;
     }
 
     forEach(obj, fn) {
