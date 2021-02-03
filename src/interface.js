@@ -45,7 +45,7 @@ Testrail_api.prototype.request = function request(config) {
 // Provide aliases for supported request post methods
 utils.forEach(post_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
-        const data = typeof args[args.length - 1] === 'object' ? args[args.length - 1] :  null;
+        const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
         if (data) args.pop();
         let uri = method;
         for(let i=0, len = args.length; i<len; i++) {uri += `/${args[i]}`}
@@ -63,7 +63,7 @@ utils.forEach(post_methods, function forEachMethod(method) {
 // Provide aliases for supported request get methods
 utils.forEach(get_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
-        const data = typeof args[args.length - 1] === 'object' ? args[args.length - 1] :  null;
+        const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
         if (data) args.pop();
         let uri = method;
         for(let i=0, len = args.length; i<len; i++) {uri += `/${args[i]}`}

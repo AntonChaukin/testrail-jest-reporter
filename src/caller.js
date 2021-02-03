@@ -1,5 +1,5 @@
 'use strict';
-const chalk = require('chalk'), tr_api = require('./interface'), Utils = require('./utils'),
+const chalk = require('chalk'), tr_api = require('../lib/controller/api.interface'), Utils = require('./utils'),
 ReporterError = require('./error');
 const error = chalk.bold.red;
 const util = new Utils();
@@ -14,8 +14,10 @@ function init(_options) {
     this._baseUrl = _options.baseUrl ;
     this._milestone_name = _options.milestone;
     this._project_id = _options.project_id;
-    tr_api.defaults.headers['Authorization'] = _options.auth;
-    tr_api.defaults.uri = this._baseUrl + '/index.php?/api/v2/';
+    tr_api.defaults.username = _options.username;
+    tr_api.defaults.password = _options.password;
+    // prefixUrl
+    tr_api.defaults.prefixUrl = this._baseUrl + '/index.php?/api/v2/';
 }
 
 function add_results(testsResults) {

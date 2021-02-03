@@ -24,7 +24,8 @@ class CustomTestrailReporter {
         this._options.milestone = _options && _options.milestone || milestone;
         this._options.baseUrl = _options && _options.baseUrl || baseUrl;
         this._options.project_id = _options && _options.project_id || project_id;
-        this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
+        this._options.username = user;
+        this._options.password = pass;
         caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
     }
