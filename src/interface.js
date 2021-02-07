@@ -1,5 +1,7 @@
 'use strict';
-const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils');
+const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils'), 
+    ReporterError = require('./error'), {compile} = require('@prantlf/jsonlint/lib/validator'),
+    {parse} = require('./parser'), {body: schema_body, data: schema_data} = require('./schemas');
 const error = chalk.bold.red;
 const utils = new Utils();
 const post_methods = ['add_result_for_case', 'add_results_for_cases'];
@@ -10,7 +12,8 @@ let defaults = {
         'Content-Type': 'application/json'
     },
     json: true,
-    jar: true
+    jar: true,
+    resolveWithFullResponse: true
 }
 
 function Testrail_api(config) {
@@ -32,12 +35,18 @@ Testrail_api.prototype.request = function request(uri, ...args) {
 
     if(utils.isPlainObject(args[0]) && args[0].method ===  'POST') {
         args.shift();
-
+        const validate_data = compile(JSON.stringify(schema_data[uri]));
+        try {
+            validate_data(JSON.stringify(data));
+        }
+        catch (err) {
+            throw new ReporterError(`\nInvalid request data for method ${uri} 
+            Context: ${JSON.stringify(data)}\n${err.message}`);
+        }
         caller = _base.defaults({
             method: 'POST',
             body: data,
-            followAllRedirects: true,
-            resolveWithFullResponse: true
+            followAllRedirects: true
         });
     } else {
         caller =_base.defaults({qs: data});
@@ -45,14 +54,31 @@ Testrail_api.prototype.request = function request(uri, ...args) {
 
     for(let i=0, len = args.length; i<len; i++) {_path += `/${args[i]}`}
 
-    return caller(_path);
+    return caller(_path)
+        .then(resp => {
+            switch (resp.statusCode) {
+                case 200:
+                    break;
+                default:
+                    throw new ReporterError(`\nUnexpected response status code ${resp.statusCode} 
+                    \n${JSON.stringify(resp, null, 2)}`)
+            }
+            const validate_body = compile(JSON.stringify(schema_body[uri]));
+            try {
+                validate_body(JSON.stringify(resp.body));
+            }
+            catch (err) {
+                throw new ReporterError(`\nTestRail API response parsing error:\n${err.message}`);
+            }
+            return resp.body;
+        })
+        .catch(error => {throw new ReporterError(`\n${error.message}`)});
 };
 
 // Provide aliases for supported request post methods
 utils.forEach(post_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
         return this.request(method, {method: 'POST'}, ...args)
-            .catch((err) => console.log(error(err)));
     };
 });
 
@@ -60,7 +86,6 @@ utils.forEach(post_methods, function forEachMethod(method) {
 utils.forEach(get_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
         return this.request(method, ...args)
-            .catch((err) => {throw new Error(err)});
     };
 });
 
