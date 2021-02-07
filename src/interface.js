@@ -1,7 +1,7 @@
 'use strict';
 const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils'), 
     ReporterError = require('./error'), {compile} = require('@prantlf/jsonlint/lib/validator'),
-    {parse} = require('./parser'), {body: schema_body, data: schema_data} = require('./schemas');
+    {body: schema_body, data: schema_data} = require('./schemas');
 const error = chalk.bold.red;
 const utils = new Utils();
 const post_methods = ['add_result_for_case', 'add_results_for_cases'];
