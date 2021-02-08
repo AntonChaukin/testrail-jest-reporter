@@ -1,6 +1,6 @@
 {
   "name": "testrail-jest-reporter",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Custom Jest reporter for Testrail synchronization",
   "main": "index.js",
   "engines": {
@@ -52,8 +52,10 @@
     "jest": "^26.6.3"
   },
   "dependencies": {
+    "@prantlf/jsonlint": "^10.2.0",
     "chalk": "^4.1.0",
     "fs-extra": "^9.0.1",
+    "lodash": "^4.17.20",
     "got": "^11.8.1",
     "process": "^0.11.10",
     "request": "^2.88.2",

@@ -1,5 +1,7 @@
 'use strict';
-const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils');
+const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils'),
+    ReporterError = require('./error'), {compile} = require('@prantlf/jsonlint/lib/validator'),
+    {body: schema_body, data: schema_data} = require('./schemas');
 const error = chalk.bold.red;
 const utils = new Utils();
 const post_methods = ['add_result_for_case', 'add_results_for_cases'];
@@ -7,11 +9,11 @@ const get_methods = ['get_milestones', 'get_plans', 'get_plan', 'get_runs', 'get
 
 let defaults = {
     headers: {
-        'Authorization': null,
         'Content-Type': 'application/json'
     },
     json: true,
-    jar: true
+    jar: true,
+    resolveWithFullResponse: true
 }
 
 function Testrail_api(config) {
@@ -21,57 +23,69 @@ function Testrail_api(config) {
 /**
  * Dispatch a request
  *
- * @param {Object} config The config specific for this request (merged with this.defaults)
+ * @param {string} uri
+ * @param {array} args The config specific for this request (merged with this.defaults)
  */
-Testrail_api.prototype.request = function request(config) {
-    if (typeof config === 'string') {
-        config = arguments[1] || {};
-        config.uri = arguments[0];
+Testrail_api.prototype.request = function request(uri, ...args) {
+    const _base = rp.defaults(this.defaults);
+    let caller;
+    let _path = uri;
+    const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
+    if (data) args.pop();
+
+    if(utils.isPlainObject(args[0]) && args[0].method ===  'POST') {
+        args.shift();
+        const validate_data = compile(JSON.stringify(schema_data[uri]));
+        try {
+            validate_data(JSON.stringify(data));
+        }
+        catch (err) {
+            throw new ReporterError(`\nInvalid request data for method ${uri} 
+            Context: ${JSON.stringify(data)}\n${err.message}`);
+        }
+        caller = _base.defaults({
+            method: 'POST',
+            body: data,
+            followAllRedirects: true
+        });
     } else {
-        config = config || {};
+        caller =_base.defaults({qs: data});
     }
 
-    config = mergeConfig(this.defaults, config);
+    for(let i=0, len = args.length; i<len; i++) {_path += `/${args[i]}`}
 
-    if (config.method) {
-        config.method = config.method.toUpperCase();
-    } else if (this.defaults.method) {
-        config.method = this.defaults.method.toUpperCase();
-    }
-
-    return rp(config);
+    return caller(_path)
+        .then(resp => {
+            switch (resp.statusCode) {
+                case 200:
+                    break;
+                default:
+                    throw new ReporterError(`\nUnexpected response status code ${resp.statusCode} 
+                    \n${JSON.stringify(resp, null, 2)}`)
+            }
+            const validate_body = compile(JSON.stringify(schema_body[uri]));
+            try {
+                validate_body(JSON.stringify(resp.body));
+            }
+            catch (err) {
+                throw new ReporterError(`\nTestRail API response parsing error:\n${err.message}`);
+            }
+            return resp.body;
+        })
+        .catch(error => {throw new ReporterError(`\n${error.message}`)});
 };
 
 // Provide aliases for supported request post methods
 utils.forEach(post_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
-        const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
-        if (data) args.pop();
-        let uri = method;
-        for(let i=0, len = args.length; i<len; i++) {uri += `/${args[i]}`}
-
-        return this.request({
-            method: 'POST',
-            uri: uri,
-            body: data,
-            followAllRedirects: true,
-            resolveWithFullResponse: true
-        }).catch((err) => console.log(error(err)));
+        return this.request(method, {method: 'POST'}, ...args)
     };
 });
 
 // Provide aliases for supported request get methods
 utils.forEach(get_methods, function forEachMethod(method) {
     Testrail_api.prototype[method] = function(...args) {
-        const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
-        if (data) args.pop();
-        let uri = method;
-        for(let i=0, len = args.length; i<len; i++) {uri += `/${args[i]}`}
-
-        return this.request({
-            uri: uri,
-            qs: data
-        }).catch((err) => {throw new Error(err)});
+        return this.request(method, ...args)
     };
 });
 
@@ -118,40 +132,4 @@ function extend(a, b, thisArg) {
         }
     });
     return a;
-}
-
-function mergeConfig(config1, config2) {
-    config2 = config2 || {};
-    let config = {};
-    let otherKeys = Object
-        .keys(config1)
-        .concat(Object.keys(config2))
-        .filter(function filterKeys(key) {
-            return key !== 'headers' || key !== 'uri';
-        });
-
-    mergeProperties('headers');
-    utils.forEach(otherKeys, mergeProperties);
-    config['uri'] = config1['uri'] + config2['uri'];
-
-    return config;
-
-    function getMergedValue(target, source) {
-        if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
-            return utils.merge(target, source);
-        } else if (utils.isPlainObject(source)) {
-            return utils.merge({}, source);
-        } else if (utils.isArray(source)) {
-            return source.slice();
-        }
-        return source;
-    }
-
-    function mergeProperties(prop) {
-        if (typeof config2[prop] !== 'undefined') {
-            config[prop] = getMergedValue(config1[prop], config2[prop]);
-        } else if (typeof config1[prop] !== 'undefined') {
-            config[prop] = getMergedValue(undefined, config1[prop]);
-        }
-    }
 }
