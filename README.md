@@ -135,6 +135,8 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 - Add new TestRail Milestone if the specified Milestone not present in the Project.
 - ~~Also need to write more tests.~~                                   >> **Done in 1.0.4**
 - ~~Added ability to specify several case_ids in one test description~~ >> **Done in 1.0.6**
+- ~~Added JSON validator to API interface~~ >> **Done in 1.0.7**
+- Migrate to GOT
 
 <br>**Version 2:**
 - Add the Reporter CLI.
