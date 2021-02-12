@@ -107,3 +107,6 @@ dist
 /.idea/modules.xml
 /.idea/testrail-jest-reporter.iml
 /.idea/vcs.xml
+
+tests/api.test.js
+lib/
