@@ -1,8 +1,6 @@
 'use strict';
-const rp = require('request-promise'), chalk = require('chalk'), Utils = require('./utils'), 
-    ReporterError = require('./error'), {compile} = require('@prantlf/jsonlint/lib/validator'),
-    {body: schema_body, data: schema_data} = require('./schemas');
-const error = chalk.bold.red;
+const rp = require('request-promise'), Utils = require('./utils'), ReporterError = require('./error');
+const validator = require('./validator');
 const utils = new Utils();
 const post_methods = ['add_result_for_case', 'add_results_for_cases'];
 const get_methods = ['get_milestones', 'get_plans', 'get_plan', 'get_runs', 'get_tests']
@@ -30,19 +28,13 @@ Testrail_api.prototype.request = function request(uri, ...args) {
     const _base = rp.defaults(this.defaults);
     let caller;
     let _path = uri;
+    const validate = validator(uri);
     const data = utils.isPlainObject(args[args.length - 1]) ? args[args.length - 1] :  null;
     if (data) args.pop();
 
     if(utils.isPlainObject(args[0]) && args[0].method ===  'POST') {
         args.shift();
-        const validate_data = compile(JSON.stringify(schema_data[uri]));
-        try {
-            validate_data(JSON.stringify(data));
-        }
-        catch (err) {
-            throw new ReporterError(`\nInvalid request data for method ${uri} 
-            Context: ${JSON.stringify(data)}\n${err.message}`);
-        }
+        validate.data(data);
         caller = _base.defaults({
             method: 'POST',
             body: data,
@@ -63,13 +55,7 @@ Testrail_api.prototype.request = function request(uri, ...args) {
                     throw new ReporterError(`\nUnexpected response status code ${resp.statusCode} 
                     \n${JSON.stringify(resp, null, 2)}`)
             }
-            const validate_body = compile(JSON.stringify(schema_body[uri]));
-            try {
-                validate_body(JSON.stringify(resp.body));
-            }
-            catch (err) {
-                throw new ReporterError(`\nTestRail API response parsing error:\n${err.message}`);
-            }
+            validate.body(resp.body);
             return resp.body;
         })
         .catch(error => {throw new ReporterError(`\n${error.message}`)});
