@@ -2,8 +2,9 @@
 const rp = require('request-promise'), Utils = require('./utils'), ReporterError = require('./error');
 const validator = require('./validator');
 const utils = new Utils();
-const post_methods = ['add_result_for_case', 'add_results_for_cases'];
-const get_methods = ['get_milestones', 'get_plans', 'get_plan', 'get_runs', 'get_tests']
+const post_methods = ['add_result_for_case', 'add_results_for_cases', 'add_run', 'update_run'];
+const get_methods = ['get_project', 'get_milestones', 'get_plans', 'get_plan', 'get_runs',
+    'get_tests', 'get_case', 'get_suite']
 
 let defaults = {
     headers: {
@@ -87,6 +88,25 @@ function createInstance(defaultConfig) {
 }
 
 // Create the default instance to be exported
+/**
+ *
+ * @interface
+ * @property {Object} defaults
+ * @property {Object} defaults.headers
+ * @property {string} defaults.baseUrl
+ * @property {function} add_results_for_cases
+ * @property {function} add_result_for_case
+ * @property {function} add_run
+ * @property {function} update_run
+ * @property {function} get_project
+ * @property {function} get_milestones
+ * @property {function} get_plans
+ * @property {function} get_plan
+ * @property {function} get_runs
+ * @property {function} get_tests
+ * @property {function} get_suite
+ * @property {function} get_case
+ * */
 let api = createInstance(defaults);
 
 module.exports = api;

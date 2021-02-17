@@ -5,7 +5,7 @@ const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
-const {baseUrl, regex, milestone, project_id, user, pass} = require(configPath);
+const {baseUrl, regex, milestone, project_id, suite_mode, user, pass} = require(configPath);
 const Utils = require('./src/utils');
 const caller = require('./src/caller');
 
@@ -24,6 +24,8 @@ class CustomTestrailReporter {
         this._options.milestone = _options && _options.milestone || milestone;
         this._options.baseUrl = _options && _options.baseUrl || baseUrl;
         this._options.project_id = _options && _options.project_id || project_id;
+        this._options.suite_mode = _options && _options.suite_mode || suite_mode;
+        this._options.run_update = (_options && _options.hasOwnProperty('run_update')) ? _options.run_update : true;
         this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
         caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
@@ -94,14 +96,18 @@ class CustomTestrailReporter {
             return new Error('Testrail Jest Reporter reported an error');
         }
     }
-    _accumulateResults(testcases_list) {
-        for (let i=0, len = testcases_list.length; i<len; i++) {
-            let index = -1;
-            const test = this.tests.find(test => test.case_id === testcases_list[i].case_id);
-            const run_id = test && test.run_id;
-            if (run_id && !!this.results.length) index = this.results.findIndex(run => run.id === run_id);
-            if (~index) this.results[index].results.push(testcases_list[i]);
-            else if (run_id) this.results.push({id: run_id, "results": [testcases_list[i]]});
+    _accumulateResults(testsresult_list) {
+        for (let i=0, len = testsresult_list.length; i<len; i++) {
+            const test = this.tests.find(test => test.case_id === testsresult_list[i].case_id);
+            if (test) {
+                const index = this.results.findIndex(run => run.run_id === test.run_id);
+                if (~index) this.results[index].results.push(testsresult_list[i]);
+                else this.results
+                    .push({run_id: test.run_id, "results": [testsresult_list[i]]});
+            } else {
+                this.results
+                    .push({case_id: testsresult_list[i].case_id, "result": testsresult_list[i]})
+            }
         }
     }
 }

@@ -177,7 +177,7 @@ describe('Reporter tests', function (){
                 reporter.tests = [{case_id: testResult.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult]},null);
                 expect(reporter.results).toHaveLength(1);
-                expect(reporter.results[0]).toHaveProperty('id', 1);
+                expect(reporter.results[0]).toHaveProperty('run_id', 1);
                 expect(reporter.results[0]).toHaveProperty('results', [testcase]);
             });
 
@@ -191,7 +191,7 @@ describe('Reporter tests', function (){
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}, {case_id: testResult_2.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(1);
-                expect(reporter.results[0]).toHaveProperty('id', 1);
+                expect(reporter.results[0]).toHaveProperty('run_id', 1);
                 expect(reporter.results[0]).toHaveProperty('results', [testcase_1, testcase_2]);
             });
 
@@ -205,9 +205,9 @@ describe('Reporter tests', function (){
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}, {case_id: testResult_2.duration, run_id: 2}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(2);
-                expect(reporter.results[0]).toHaveProperty('id', 1);
+                expect(reporter.results[0]).toHaveProperty('run_id', 1);
                 expect(reporter.results[0]).toHaveProperty('results', [testcase_1]);
-                expect(reporter.results[1]).toHaveProperty('id', 2);
+                expect(reporter.results[1]).toHaveProperty('run_id', 2);
                 expect(reporter.results[1]).toHaveProperty('results', [testcase_2]);
             });
 
@@ -220,7 +220,7 @@ describe('Reporter tests', function (){
                 reporter.tests = [{case_id: testResult_1.duration, run_id: 1}];
                 await reporter.onTestResult(null, {testResults: [testResult_1, testResult_2]},null);
                 expect(reporter.results).toHaveLength(1);
-                expect(reporter.results[0]).toHaveProperty('id', 1);
+                expect(reporter.results[0]).toHaveProperty('run_id', 1);
                 expect(reporter.results[0]).toHaveProperty('results', [testcase_1]);
             });
 

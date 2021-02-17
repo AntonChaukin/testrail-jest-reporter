@@ -63,7 +63,7 @@ class Utils {
         let _t = title.match(regex);
         _t = _t || [];
         for (let i=0, len=_t.length; i<len; i++) {
-            case_ids.push(_t[i].match(/[?\d]{3,6}/gm))
+            case_ids.push(_t[i].match(/\d+/gm)[0])
         }
         return case_ids.length && case_ids;
     }

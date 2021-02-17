@@ -24,7 +24,7 @@ const add_result_for_case = {
         "defects",
         "version"
     ]
-}
+};
 const add_results_for_cases = {
     "type": "object",
     "properties": {
@@ -67,8 +67,70 @@ const add_results_for_cases = {
         "results"
     ]
 };
+const add_run = {
+    "type": "object",
+    "required": [
+        "include_all",
+        "case_ids"
+    ],
+    "properties": {
+        "suite_id": {
+            "type": "integer"
+        },
+        "milestone_id": {
+            "oneOf": [{
+                "type": undefined
+            }, {
+                "type": "integer"
+            }]
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "oneOf": [{
+                "type": undefined
+            }, {
+                "type": "string"
+            }]
+        },
+        "assignedto_id": {
+            "oneOf": [{
+                "type": undefined
+            }, {
+                "type": "integer"
+            }]
+        },
+        "refs": {
+            "oneOf": [{
+                "type": undefined
+            }, {
+                "type": "string"
+            }]
+        },
+        "include_all": {
+            "type": "boolean"
+        },
+        "case_ids": {
+            "oneOf": [{
+                "type": undefined
+            }, {
+                "type": "array",
+                "items": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                }
+            }]
+        }
+    },
+};
 
 module.exports = {
     add_result_for_case,
-    add_results_for_cases
+    add_results_for_cases,
+    add_run,
+    update_run: add_run
 };
