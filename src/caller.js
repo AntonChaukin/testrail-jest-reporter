@@ -1,5 +1,5 @@
 'use strict';
-const chalk = require('chalk'), tr_api = require('./interface'), ReporterError = require('./error');
+const chalk = require('chalk'), tr_api = require('../lib/interface'), ReporterError = require('../lib/error');
 const error = chalk.bold.red;
 
 module.exports = {
@@ -23,11 +23,11 @@ function init(_options) {
  * @param {array<object>} testsResults
  * @return {Promise<number | boolean>}
  */
-function add_results(testsResults) {
+async function add_results(testsResults) {
     let runs = testsResults.filter(result => result.hasOwnProperty('run_id'));
     const cases = testsResults.filter(result => result.hasOwnProperty('case_id'));
-    if (cases) {
-        const updated_runs = update_run.call(this, cases);
+    if (!!cases.length) {
+        const updated_runs = await update_run.call(this, cases);
         runs = runs.concat(updated_runs);
     }
     return Promise.all(
@@ -142,6 +142,7 @@ function get_suite_mode() {
 }
 
 async function update_run(cases) {
+
     let run_data;
     let suits = [];
     let runs = [];
@@ -178,7 +179,7 @@ async function update_run(cases) {
                     suits[j].case_ids.push(this._tests[i].case_id)
                 }
             }
-            run_data = {"include_all": false, "case_ids": suits[j].case_ids};
+            run_data = {"include_all": false, "case_ids": suits[j].case_ids, "milestone_id": this._milestone_id};
             const {id} = await tr_api.update_run(run.id, run_data);
             runs.push({run_id: id, results: suits[j].results})
         } else {
@@ -188,12 +189,16 @@ async function update_run(cases) {
                 run_data = {"suite_id": suits[j].suite_id,
                     "name": name + ` ${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`,
                     "include_all": false,
-                    "case_ids": suits[j].case_ids};
+                    "case_ids": suits[j].case_ids,
+                    "milestone_id": this._milestone_id
+                };
             }
             else {
                 run_data = {"name": `Automated Run ${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`,
                     "include_all": false,
-                    "case_ids": suits[j].case_ids};
+                    "case_ids": suits[j].case_ids,
+                    "milestone_id": this._milestone_id
+                };
             }
             const {id} = await tr_api.add_run(this._project_id, run_data);
             runs.push({run_id: id, results: suits[j].results})

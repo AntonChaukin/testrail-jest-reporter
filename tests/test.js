@@ -1,4 +1,4 @@
-const Utils = require('../src/utils'), ReporterError = require('../src/error');
+const Utils = require('../src/utils'), ReporterError = require('../lib/error');
 const chalk = require('chalk');
 const error = chalk.bold.red;
 const {passed, failed, pending, case_title, duration, name,
