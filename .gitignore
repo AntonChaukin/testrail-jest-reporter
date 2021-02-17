@@ -109,4 +109,3 @@ dist
 /.idea/vcs.xml
 
 tests/api.test.js
-lib/
