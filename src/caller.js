@@ -1,5 +1,10 @@
 'use strict';
 const chalk = require('chalk'), tr_api = require('../lib/interface'), ReporterError = require('../lib/error');
+const Ajv = require("ajv").default;
+const ajv = new Ajv({
+    strict: false,
+    allErrors: true,
+});
 const error = chalk.bold.red;
 
 module.exports = {
@@ -142,7 +147,44 @@ function get_suite_mode() {
 }
 
 async function update_run(cases) {
-
+    const valid = ajv.validate({
+            "type": "object",
+            "properties": {
+                "case_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "object",
+                    "properties": {
+                        "case_id": {
+                            "type": "integer"
+                        },
+                        "status_id": {
+                            "type": "integer"
+                        },
+                        "comment": {
+                            "type": "string"
+                        },
+                        "elapsed": {
+                            "type": "string"
+                        },
+                        "defects": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        }
+                    },
+                }
+            },
+            "required": ["case_id", "result"]
+        },
+        cases);
+    if (!valid) {
+        console.log(error(`\nCan not update cases of test JSON schema error
+                    \nContext: ${JSON.stringify(cases)}\n${JSON.stringify(ajv.errors, null, 2)}`));
+        return [];
+    }
     let run_data;
     let suits = [];
     let runs = [];
