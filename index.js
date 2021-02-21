@@ -86,6 +86,9 @@ class CustomTestrailReporter {
             .then(count => {
                 if (count) console
                     .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
+            })
+            .catch(e => {
+                console.log(error(`! Testrail Jest Reporter Error !\n${e.stack}`));
             });
     }
 
