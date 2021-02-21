@@ -96,7 +96,9 @@ class CustomTestrailReporter {
     }
     _accumulateResults(testsresult_list) {
         for (let i=0, len = testsresult_list.length; i<len; i++) {
-            const test = this.tests.find(test => test.case_id === testsresult_list[i].case_id);
+            const test = this.tests ?
+                this.tests.find(test => test.case_id === testsresult_list[i].case_id)
+                : null;
             if (test) {
                 const index = this.results.findIndex(run => run.run_id === test.run_id);
                 if (~index) this.results[index].results.push(testsresult_list[i]);
