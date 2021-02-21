@@ -25,7 +25,7 @@ class CustomTestrailReporter {
         this._options.baseUrl = _options && _options.baseUrl || baseUrl;
         this._options.project_id = _options && _options.project_id || project_id;
         this._options.suite_mode = _options && _options.suite_mode || suite_mode;
-        this._options.run_update = (_options && _options.hasOwnProperty('run_update')) ? _options.run_update : true;
+        this._options.run_update = (_options && _options.hasOwnProperty('publish_results')) ? _options.publish_results : true;
         this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
         caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});

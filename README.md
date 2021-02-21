@@ -19,6 +19,10 @@ the Reporter must be specified in the jest-config.js or package.json file as par
  - Parameter is defined as 'project_id', which is the id of your project on TestRail.
  - Specify the TestRail server url as parameter 'baseUrl' _(recommended)_.
  - Specify the TestRail Milestone name as parameter 'milestone' _(recommended)_.
+ - Specify the TestRail **`suite mode`** id as parameter 'suite_mode' _(recommended)_. If that parameter is not specified, the Reporter will get this automatically. 
+     >single repository for all cases - `suite_mode:1`<br>
+     single repository with baseline support - `suite_mode:2`<br>
+     multiple test suites to manage cases - `suite_mode:3`<br>
  - There is no 'pending' or 'skipped' test result status in the TestRail results default <br>statuses. 
  You can add your custom status to the TestRail and specify it id as parameter 
  <br>'"statuses":{"pending": "7"}' _(recommended)_.
@@ -31,10 +35,11 @@ module.exports = {
     "default",
     [
         "jest-2-testrail", 
-        { project_id: "1", 
+        { project_id: 1, 
             baseUrl: 'http://localhost', 
             milestone: '<milestone_name>',
-            statuses: {pending: "7"}
+            suite_mode: 3,
+            statuses: {pending: 7}
         },
     ]
   ], 
@@ -53,6 +58,7 @@ module.exports = {
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
                 "milestone": '<milestone_name>',
+                "suite_mode": "3"
                 "statuses": {"pending": "7"}
             }
         ]
@@ -94,9 +100,10 @@ Also, if you want to use API authentication instead of your password,
 <br>enable session authentication for API in the TestRail Site Settings,
 <br>and add an API key in your User settings _(This is recommended)_.
 ### Add TestRail tests Runs
-The first version of the Reporter requires you to add tests Runs with all tests you want to automate.
-The Reporter parse all TestRail tests Plans
-<br>and test Runs of the Milestone to collect testcases.
+You can add a TestRail tests Runs or tests Plan with all tests you want to automate.<br> 
+If you don't, the Reporter will publish Jest tests results into the new TestRail test Run.<br>
+Each time the Jest runs tests the Reporter parse all TestRail tests Plans
+<br>and tests Runs of the Milestone to collect testcases.
 The Reporter collects only unique testcases,
 <br>if you have several tests Runs with one testcase
 then The Reporter push the test result only to one of that Runs.
@@ -130,7 +137,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 
 ## Roadmap
 **This version:**
-- Add new tests Run if there are testcases that are not present in any of the existing TestRail tests Runs.
+- ~~Add new tests Run if there are testcases that are not present in any of the existing TestRail tests Runs.~~ >> **Done in 1.1.0**
 - Add new test Runs if the Milestone not specified.
 - Add new TestRail Milestone if the specified Milestone not present in the Project.
 - ~~Also need to write more tests.~~                                   >> **Done in 1.0.4**
