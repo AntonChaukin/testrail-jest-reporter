@@ -8,9 +8,10 @@ const ajv = new Ajv({
 const error = chalk.bold.red;
 
 module.exports = {
-    init: init,
-    add_results: add_results,
-    get_tests:  get_tests
+    init,
+    get_milestone_id,
+    add_results,
+    get_tests
 }
 
 function init(_options) {
@@ -55,21 +56,29 @@ async function add_results(testsResults) {
         });
 }
 
-function get_tests() {
+function get_milestone_id() {
     this._milestone_id = null;
-    this._runs_ids = [];
-    this._tests = [];
     return get_suite_mode.call(this)
         .then(() => tr_api.get_milestones(this._project_id, {is_completed: 0}))
         .then(res => {
             const _milestone = res.filter((milestone) => milestone.name === this._milestone_name);
-
             if (_milestone && !!_milestone.length) {
                 this._milestone_id = _milestone[0].id;
-                return tr_api.get_plans(this._project_id, {is_completed: 0, milestone_id: this._milestone_id});
+            } else {
+                throw new ReporterError(`Can not find milestone with name ${this._milestone_name}!
+                \nNo one tests results will be reported.
+                \nPlease, check the "milestone" param you specified in congif and try again`)
             }
-            return false;
         })
+        .catch(e => {
+            console.log(error(e.stack));
+        })
+}
+
+function get_tests() {
+    this._runs_ids = [];
+    this._tests = [];
+    return tr_api.get_plans(this._project_id, {is_completed: 0, milestone_id: this._milestone_id})
         .then(res => {
             if (res) {
                 return Promise.all(res.map(plan => tr_api.get_plan(plan.id)));
@@ -128,14 +137,10 @@ function get_tests() {
             if (!!this._tests.length) {
                 this._tests = this._tests
                     .filter((test, i, arr) => !arr.slice(i+1).find(t => t.case_id === test.case_id));
-                return this._tests;
             }
-            throw new ReporterError(`There is no one Testrail testcase was finding in Project id=${this._project_id} 
-                by milestone "${this._milestone_name}"`);
         })
         .catch((err) => {
             console.log(error(err.stack));
-            return false;
         });
 }
 

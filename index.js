@@ -40,8 +40,8 @@ class CustomTestrailReporter {
      */
     onRunStart(_results, _options) {
         if (this._options.project_id && !isNaN(this._options.project_id) && this._options.milestone) {
-            caller.get_tests()
-                .then(_tests => this.tests = _tests);
+            caller.get_milestone_id();
+            //    .then(_tests => this.tests = _tests);
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
@@ -84,14 +84,19 @@ class CustomTestrailReporter {
      * @param {JestTestRunResult} _results - Results from the test run
      */
     onRunComplete(_contexts, _results) {
-        caller.add_results(this.results)
-            .then(count => {
-                if (count) console
-                    .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
-            })
-            .catch(e => {
-                console.log(error(`! Testrail Jest Reporter Error !\n${e.stack}`));
-            });
+        if (caller._milestone_id) {
+            caller.get_tests()
+                .then(() => {
+                    return caller.add_results(this.results)
+                })
+                .then(count => {
+                    if (count) console
+                        .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
+                })
+                .catch(e => {
+                    console.log(error(`! Testrail Jest Reporter Error !\n${e.stack}`));
+                });
+        }
     }
 
     getLastError() {
