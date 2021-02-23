@@ -30,8 +30,9 @@ function init(_options) {
  * @return {Promise<number | boolean>}
  */
 async function add_results(testsResults) {
-    let runs = testsResults.filter(result => result.hasOwnProperty('run_id'));
-    const cases = testsResults.filter(result => result.hasOwnProperty('case_id'));
+    const results = groupCases.call(this, testsResults);
+    let runs = results.filter(result => result.hasOwnProperty('run_id'));
+    const cases = results.filter(result => result.hasOwnProperty('case_id'));
     if (!!cases.length) {
         const updated_runs = await update_run.call(this, cases);
         runs = runs.concat(updated_runs);
@@ -42,13 +43,14 @@ async function add_results(testsResults) {
         })
     )
         .then(response => {
-            let count = 0;
+            let tests_count = 0;
             response.map(run => {
                 run.map((result) => {
-                    if (result && result.id) count++;
+                    if (result && result.id) tests_count++;
                 });
             });
-            return count;
+            let runs_ids = runs.map(run => run.run_id).filter((id, i, arr) => !arr.includes(id,i+1))
+            return {tests_count, runs_count: runs_ids.length};
         })
         .catch((err) => {
             console.log(error(err));
@@ -160,36 +162,39 @@ function get_suite_mode() {
 
 async function update_run(cases) {
     const valid = ajv.validate({
-            "type": "object",
-            "properties": {
-                "case_id": {
-                    "type": "integer"
-                },
-                "result": {
-                    "type": "object",
-                    "properties": {
-                        "case_id": {
-                            "type": "integer"
-                        },
-                        "status_id": {
-                            "type": "integer"
-                        },
-                        "comment": {
-                            "type": "string"
-                        },
-                        "elapsed": {
-                            "type": "string"
-                        },
-                        "defects": {
-                            "type": "string"
-                        },
-                        "version": {
-                            "type": "string"
-                        }
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "integer"
                     },
-                }
-            },
-            "required": ["case_id", "result"]
+                    "result": {
+                        "type": "object",
+                        "properties": {
+                            "case_id": {
+                                "type": "integer"
+                            },
+                            "status_id": {
+                                "type": "integer"
+                            },
+                            "comment": {
+                                "type": "string"
+                            },
+                            "elapsed": {
+                                "type": "string"
+                            },
+                            "defects": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                    }
+                },
+                "required": ["case_id", "result"]
+            }
         },
         cases);
     if (!valid) {
@@ -260,4 +265,21 @@ async function update_run(cases) {
     }
 
     return runs;
+}
+
+function groupCases(jest_result_list) {
+    let results = [];
+    for (let i=0, len = jest_result_list.length; i<len; i++) {
+        const test = this._tests ?
+            this._tests.find(test => test.case_id === jest_result_list[i].case_id)
+            : null;
+        if (test) {
+            const index = results.findIndex(run => run.run_id === test.run_id);
+            if (~index) results[index].results.push(jest_result_list[i]);
+            else results.push({run_id: test.run_id, "results": [jest_result_list[i]]});
+        } else {
+            results.push({case_id: jest_result_list[i].case_id, "result": jest_result_list[i]})
+        }
+    }
+    return results;
 }

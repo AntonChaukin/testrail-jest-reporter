@@ -41,7 +41,6 @@ class CustomTestrailReporter {
     onRunStart(_results, _options) {
         if (this._options.project_id && !isNaN(this._options.project_id) && this._options.milestone) {
             caller.get_milestone_id();
-            //    .then(_tests => this.tests = _tests);
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
@@ -71,7 +70,11 @@ class CustomTestrailReporter {
         if (caller._milestone_id) {
             _testResults.testResults.forEach((result) => {
                 const testcases = this._utils.formatCase(result);
-                if (testcases) this._accumulateResults(testcases);
+                if (testcases) {
+                    for (let i=0, len = testcases.length; i<len; i++) {
+                        this.results.push(testcases[i])
+                    }
+                }
             });
         }
     }
@@ -89,9 +92,9 @@ class CustomTestrailReporter {
                 .then(() => {
                     return caller.add_results(this.results)
                 })
-                .then(count => {
-                    if (count) console
-                        .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
+                .then(({tests_count, runs_count}) => {
+                    if (tests_count) console
+                        .log(message(`Testrail Jest Reporter updated ${tests_count} tests in ${runs_count} runs.`));
                 })
                 .catch(e => {
                     console.log(error(`! Testrail Jest Reporter Error !\n${e.stack}`));
@@ -102,22 +105,6 @@ class CustomTestrailReporter {
     getLastError() {
         if (this._shouldFail) {
             return new Error('Testrail Jest Reporter reported an error');
-        }
-    }
-    _accumulateResults(testsresult_list) {
-        for (let i=0, len = testsresult_list.length; i<len; i++) {
-            const test = this.tests ?
-                this.tests.find(test => test.case_id === testsresult_list[i].case_id)
-                : null;
-            if (test) {
-                const index = this.results.findIndex(run => run.run_id === test.run_id);
-                if (~index) this.results[index].results.push(testsresult_list[i]);
-                else this.results
-                    .push({run_id: test.run_id, "results": [testsresult_list[i]]});
-            } else {
-                this.results
-                    .push({case_id: testsresult_list[i].case_id, "result": testsresult_list[i]})
-            }
         }
     }
 }
