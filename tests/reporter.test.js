@@ -20,7 +20,7 @@ describe('Reporter tests', function (){
         });
 
         it('if "project_id" is null', () => {
-            const reporter = new Reporter(null, {project_id: null});
+            const reporter = new Reporter(null, {project_id: null, milestone: "Sprint 1"});
             const caller = require('../src/caller');
             const log_spy = jest.spyOn(global.console, 'log');
             const caller_spy = jest.spyOn(caller, 'get_tests');
@@ -32,7 +32,7 @@ describe('Reporter tests', function (){
         });
 
         it('if "project_id" is empty string', () => {
-            const reporter = new Reporter(null, {project_id: ''});
+            const reporter = new Reporter(null, {project_id: '', milestone: "Sprint 1"});
             const caller = require('../src/caller');
             const log_spy = jest.spyOn(global.console, 'log');
             const caller_spy = jest.spyOn(caller, 'get_tests');
@@ -44,7 +44,7 @@ describe('Reporter tests', function (){
         });
 
         it('if "project_id" is string', () => {
-            const reporter = new Reporter(null, {project_id: 'log'});
+            const reporter = new Reporter(null, {project_id: 'log', milestone: "Sprint 1"});
             const caller = require('../src/caller');
             const log_spy = jest.spyOn(global.console, 'log');
             const caller_spy = jest.spyOn(caller, 'get_tests');
@@ -55,8 +55,20 @@ describe('Reporter tests', function (){
             caller_spy.mockRestore();
         });
 
-        it('with "project_id" call "get_tests" method', async () => {
+        it('with "project_id" and without "milestone"', async () => {
             const reporter = new Reporter(null, {project_id: 1});
+            const caller = require('../src/caller');
+            const log_spy = jest.spyOn(global.console, 'log');
+            const caller_spy = jest.spyOn(caller, 'get_tests');
+            reporter.onRunStart();
+            expect(log_spy).toHaveBeenCalledTimes(2);
+            expect(caller_spy).toHaveBeenCalledTimes(0);
+            log_spy.mockRestore();
+            caller_spy.mockRestore();
+        });
+
+        it('with "project_id" and "milestone" call "get_tests" method', async () => {
+            const reporter = new Reporter(null, {project_id: 1, milestone: "Sprint 1"});
             const caller = require('../src/caller');
             const spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValue({ok: true});

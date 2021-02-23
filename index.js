@@ -39,14 +39,14 @@ class CustomTestrailReporter {
      * @param  _options - Run configuration
      */
     onRunStart(_results, _options) {
-        if (this._options.project_id && !isNaN(this._options.project_id)) {
+        if (this._options.project_id && !isNaN(this._options.project_id) && this._options.milestone) {
             caller.get_tests()
                 .then(_tests => this.tests = _tests);
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
-            console.log(warning(`You must define "project_id" in jets configurations!
-                \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1" }] ]`));
+            console.log(warning(`You must define "project_id"  and "milestone" in jets configurations!
+                \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1", "milestone": "Sprint 1" }] ]`));
         }
     }
 
