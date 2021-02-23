@@ -59,8 +59,8 @@ function get_tests() {
     this._milestone_id = null;
     this._runs_ids = [];
     this._tests = [];
-    get_suite_mode.call(this);
-    return tr_api.get_milestones(this._project_id, {is_completed: 0})
+    return get_suite_mode.call(this)
+        .then(() => tr_api.get_milestones(this._project_id, {is_completed: 0}))
         .then(res => {
             const _milestone = res.filter((milestone) => milestone.name === this._milestone_name);
 
@@ -142,8 +142,15 @@ function get_tests() {
 function get_suite_mode() {
     if (!this._suite_mode) {
         return tr_api.get_project(this._project_id)
-            .then(resp => this._suite_mode = resp.suite_mode);
+            .then(resp => this._suite_mode = resp.suite_mode)
+            .catch(e => {
+                this._suite_mode = 2;
+                console.log(error(`The trying to get TestRail Project was failed!
+                \n The suite mode was defined as 2 by default.
+                \n Context: ${e.stack}`))
+            });
     }
+    return Promise.resolve();
 }
 
 async function update_run(cases) {

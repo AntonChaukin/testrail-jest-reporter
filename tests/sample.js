@@ -13,7 +13,8 @@ module.exports = {
     tr_test: tr_test,
     tr_run: tr_run,
     tr_plan: tr_plan,
-    tr_milestone: tr_milestone
+    tr_milestone: tr_milestone,
+    tr_get_project
 };
 
 /**
@@ -330,6 +331,26 @@ function tr_milestone(options) {
         "project_id": 1,
         "refs": "RF-1, RF-2",
         "url": `http:///testrail/index.php?/milestones/view/${_id}`
+    }
+}
+
+/**
+ *
+ * @param {object} options
+ * @param {number || string} options.suite_mode
+ * @return {{suite_mode: *, completed_on: null, name: string, id: number, is_completed: boolean, show_announcement: boolean, url: string, announcement: string}}
+ */
+function tr_get_project(options) {
+    const _suite_mode = options && options.suite_mode || faker.random.arrayElement([1,2,3]);
+    return {
+        "announcement": "..",
+        "completed_on": null,
+        "id": 1,
+        "is_completed": false,
+        "name": "Datahub",
+        "show_announcement": true,
+        "suite_mode": _suite_mode,
+        "url": "http:///testrail/index.php?/projects/overview/1"
     }
 }
 
