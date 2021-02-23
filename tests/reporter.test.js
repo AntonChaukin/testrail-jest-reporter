@@ -84,6 +84,9 @@ describe('Reporter tests', function (){
 
     describe('Calling onTestResult', function () {
 
+        const caller = require('../src/caller');
+        caller._milestone_id = 2;
+
         it('Calling onTestResult without "tests" accumulate results', async () => {
             const accu_spy = jest.spyOn(Reporter.prototype, '_accumulateResults');
             const util_spy = jest.spyOn(Utils.prototype, 'formatCase');

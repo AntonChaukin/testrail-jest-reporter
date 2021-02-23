@@ -68,10 +68,12 @@ class CustomTestrailReporter {
      * @param _aggregatedResult - Results for the test run at the point in time of the test suite being executed
      */
     onTestResult(_test, _testResults, _aggregatedResult) {
-        _testResults.testResults.forEach((result) => {
-            const testcases = this._utils.formatCase(result);
-            if (testcases) this._accumulateResults(testcases);
-        });
+        if (caller._milestone_id) {
+            _testResults.testResults.forEach((result) => {
+                const testcases = this._utils.formatCase(result);
+                if (testcases) this._accumulateResults(testcases);
+            });
+        }
     }
 
     /**
