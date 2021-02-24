@@ -1,5 +1,5 @@
 const Utils = require('../src/utils'), Reporter = require('../index');
-const {passed, failed} = require('./sample');
+const {passed} = require('./sample');
 const chalk = require('chalk');
 const message = chalk.bold.green, error = chalk.bold.red;
 
