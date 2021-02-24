@@ -1,4 +1,10 @@
 'use strict';
+const chalk = require('chalk'), Ajv = require("ajv").default;
+const ajv = new Ajv({
+    strict: false,
+    allErrors: true,
+});
+const error = chalk.bold.red;
 
 class Utils {
     constructor(_options) {
@@ -108,6 +114,60 @@ module.exports = Utils;
  * @return {[] || [{case_id, result}, {run_id, results}]}
  */
 function groupCases(jest_result_list, tr_tests) {
+    const valid_results = ajv.validate({
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "integer"
+                    },
+                    "status_id": {
+                        "type": "integer"
+                    },
+                    "comment": {
+                        "type": "string"
+                    },
+                    "elapsed": {
+                        "type": "string"
+                    },
+                    "defects": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "required": ["case_id", "status_id", "comment", "elapsed"]
+            }
+        },
+        jest_result_list);
+    if (!valid_results ) {
+        console.log(error(`\nCan not update cases of test JSON schema error
+                    \nContext: ${JSON.stringify(ajv.errors, null, 2)}`));
+        return [];
+    }
+    const valid_tests_list = ajv.validate({
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "integer"
+                    },
+                    "run_id": {
+                        "type": "integer"
+                    }
+                },
+                "required": ["case_id", "run_id"]
+            }
+        },
+        tr_tests);
+    if (!valid_tests_list) {
+        console.log(error(`\nCan not update cases of test JSON schema error
+                    \nContext: ${JSON.stringify(ajv.errors, null, 2)}`));
+        return [];
+    }
     let results = [];
     for (let i=0, len = jest_result_list.length; i<len; i++) {
         const test = tr_tests ?

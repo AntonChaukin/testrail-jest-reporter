@@ -155,5 +155,21 @@ describe('Utils tests', function () {
             expect(results[1]).toHaveProperty('case_id', testResult_2.duration);
             expect(results[1]).toHaveProperty('result', testcase_2);
         });
+
+        it('validate results', async () => {
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            const results = utils.groupCases(testcase,[]);
+            expect(results).toHaveLength(0);
+        });
+
+        it('validate tests', async () => {
+            let utils = new Utils();
+            const testResult = passed();
+            const [testcase] = utils.formatCase(testResult);
+            const results = utils.groupCases([testcase],testcase);
+            expect(results).toHaveLength(0);
+        });
     });
 })
