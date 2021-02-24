@@ -162,6 +162,11 @@ function get_suite_mode() {
     return Promise.resolve();
 }
 
+/**
+ *
+ * @param {object} cases
+ * @return {Promise<[]>}
+ */
 async function update_run(cases) {
     const valid = ajv.validate({
             "type": "array",
@@ -217,12 +222,19 @@ async function update_run(cases) {
         suits.push({case_ids, results})
     } else {
         for (let i=0, i_len=cases.length; i<i_len; i++) {
-            const {suite_id} = await tr_api.get_case(cases[i].case_id);
+            let suite_id = null;
+            try {
+                const resp = await tr_api.get_case(cases[i].case_id);
+                suite_id = resp.suite_id;
+            }
+            catch (e) {
+                console.log(error(e.stack));
+            }
             const index = suits.findIndex(suite => suite.suite_id === suite_id);
             if (~index) {
                 suits[index].case_ids.push(cases[i].case_id);
                 suits[index].results.push(cases[i].result);
-            } else {
+            } else if (suite_id) {
                 suits.push({suite_id, case_ids: [cases[i].case_id], results: [cases[i].result]})
             }
         }
@@ -241,28 +253,45 @@ async function update_run(cases) {
                 }
             }
             run_data = {"include_all": false, "case_ids": suits[j].case_ids, "milestone_id": this._milestone_id};
-            const {id} = await tr_api.update_run(run.id, run_data);
-            runs.push({run_id: id, results: suits[j].results})
+            try {
+                const {id} = await tr_api.update_run(run.id, run_data);
+                runs.push({run_id: id, results: suits[j].results});
+            }
+            catch (e) {
+                console.log(error(e.stack));
+            }
         } else {
             const today = new Date;
+            let suite_name = 'Automated Run';
             if(suits[j].suite_id) {
-                const {name} = await tr_api.get_suite(suits[j].suite_id);
+                try {
+                    const {name} = await tr_api.get_suite(suits[j].suite_id);
+                    suite_name = name;
+                }
+                catch (e) {
+                    console.log(error(e.stack));
+                }
                 run_data = {"suite_id": suits[j].suite_id,
-                    "name": name + ` ${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`,
+                    "name": suite_name + ` ${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`,
                     "include_all": false,
                     "case_ids": suits[j].case_ids,
                     "milestone_id": this._milestone_id
                 };
             }
             else {
-                run_data = {"name": `Automated Run ${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`,
+                run_data = {"name": suite_name + ` ${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`,
                     "include_all": false,
                     "case_ids": suits[j].case_ids,
                     "milestone_id": this._milestone_id
                 };
             }
-            const {id} = await tr_api.add_run(this._project_id, run_data);
-            runs.push({run_id: id, results: suits[j].results})
+            try {
+                const {id} = await tr_api.add_run(this._project_id, run_data);
+                runs.push({run_id: id, results: suits[j].results})
+            }
+            catch (e) {
+                console.log(error(e.stack));
+            }
         }
     }
 
