@@ -30,9 +30,9 @@ describe('Caller tests', function () {
         test_2 = tr_test(case_2);
     });
 
-    describe('get_tests', function () {
+    describe('get_milestone_id', function () {
 
-        it('get_tests successful "suite_mode" was not defined', async () => {
+        it('get_milestone_id successful "suite_mode" was not defined', async () => {
             const caller = require('../src/caller');
             const api = require('../lib/interface');
 
@@ -42,28 +42,18 @@ describe('Caller tests', function () {
                 .mockResolvedValueOnce(tr_get_project({suite_mode: 2}));
             const get_milestones_spy = jest.spyOn(api, 'get_milestones')
                 .mockResolvedValueOnce(get_milestones_resp);
-            jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
-            jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
-            jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
-            const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-                .mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
 
-            await caller.get_tests();
+            await caller.get_milestone_id();
             get_milestones_spy.mockRestore();
-            get_tests_spy.mockRestore();
 
-            expect(caller._tests).toEqual([case_1, case_2]);
-            expect(caller._runs_ids).toHaveLength(runs_len+1);
-            expect(caller._milestone_id).toEqual(milestone_id);
             expect(get_project_spy).toHaveBeenCalledTimes(1);
             expect(get_project_spy).toHaveBeenCalledWith(1);
             expect(caller._suite_mode).toEqual(2);
+            expect(caller._milestone_id).toEqual(milestone_id);
             get_project_spy.mockRestore();
         });
 
-        it('get_tests successful "suite_mode" was defined', async () => {
+        it('get_milestone_id successful "suite_mode" was defined', async () => {
             const caller = require('../src/caller');
             const api = require('../lib/interface');
 
@@ -72,27 +62,16 @@ describe('Caller tests', function () {
             const get_project_spy = jest.spyOn(api, 'get_project');
             const get_milestones_spy = jest.spyOn(api, 'get_milestones')
                 .mockResolvedValueOnce(get_milestones_resp);
-            jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
-            jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
-            jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
-            const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-                .mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
 
-            await caller.get_tests();
+            await caller.get_milestone_id();
             get_milestones_spy.mockRestore();
-            get_tests_spy.mockRestore();
 
             expect(get_project_spy).toHaveBeenCalledTimes(0);
             get_project_spy.mockRestore();
-            expect(caller._tests).toEqual([case_1, case_2]);
-            expect(caller._runs_ids).toHaveLength(runs_len+1);
             expect(caller._milestone_id).toEqual(milestone_id);
-            expect(caller._suite_mode).toEqual(2);
         });
 
-        it('get_tests if "get_project" rejected', async () => {
+        it('get_milestone_id if "get_project" rejected', async () => {
             const caller = require('../src/caller');
             const api = require('../lib/interface');
 
@@ -102,6 +81,61 @@ describe('Caller tests', function () {
                 .mockRejectedValueOnce(new Error('Request rejected'));
             const get_milestones_spy = jest.spyOn(api, 'get_milestones')
                 .mockResolvedValueOnce(get_milestones_resp);
+
+            await caller.get_milestone_id();
+            get_milestones_spy.mockRestore();
+
+            expect(caller._milestone_id).toEqual(milestone_id);
+            expect(get_project_spy).toHaveBeenCalledTimes(1);
+            expect(get_project_spy).toHaveBeenCalledWith(1);
+            expect(caller._suite_mode).toEqual(2);
+            get_project_spy.mockRestore();
+        });
+
+        it('get_milestone_id if get_milestones rejected', async () => {
+            const caller = require('../src/caller');
+            const api = require('../lib/interface');
+            const err = new Error('Request rejected');
+            caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
+
+            const log_spy = jest.spyOn(global.console, 'log');
+            const get_milestones_spy = jest.spyOn(api, 'get_milestones').mockRejectedValueOnce(err);
+
+            await caller.get_milestone_id();
+            get_milestones_spy.mockRestore();
+            expect(caller._milestone_id).toBeFalsy();
+            expect(log_spy).toHaveBeenCalledTimes(1);
+            expect(log_spy).toHaveBeenCalledWith(error(err.stack));
+            log_spy.mockRestore();
+        });
+
+        it('get_milestone_id if milestone name was not found', async () => {
+            const caller = require('../src/caller');
+            const api = require('../lib/interface');
+
+            caller.init({milestone: 'Sprint 1', project_id: 1, suite_mode: 2});
+            const log_spy = jest.spyOn(global.console, 'log');
+            const get_milestones_spy = jest.spyOn(api, 'get_milestones')
+                .mockResolvedValueOnce(get_milestones_resp);
+
+            await caller.get_milestone_id();
+            get_milestones_spy.mockRestore();
+
+            expect(log_spy).toHaveBeenCalledTimes(1);
+            log_spy.mockRestore();
+            expect(caller._milestone_id).toBeFalsy();
+        });
+
+    });
+
+    describe('get_tests', function () {
+
+        it('get_tests successful', async () => {
+            const caller = require('../src/caller');
+            const api = require('../lib/interface');
+
+            caller.init({milestone: milestone_name, project_id: 1});
+            caller._milestone_id = milestone_id;
             jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
             jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
@@ -111,40 +145,10 @@ describe('Caller tests', function () {
                 .mockResolvedValue([]);
 
             await caller.get_tests();
-            get_milestones_spy.mockRestore();
             get_tests_spy.mockRestore();
 
             expect(caller._tests).toEqual([case_1, case_2]);
             expect(caller._runs_ids).toHaveLength(runs_len+1);
-            expect(caller._milestone_id).toEqual(milestone_id);
-            expect(get_project_spy).toHaveBeenCalledTimes(1);
-            expect(get_project_spy).toHaveBeenCalledWith(1);
-            expect(caller._suite_mode).toEqual(2);
-            get_project_spy.mockRestore();
-        });
-
-        it('get_tests if get_milestones rejected', async () => {
-            const caller = require('../src/caller');
-            const api = require('../lib/interface');
-
-            caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
-
-            jest.spyOn(api, 'get_milestones').mockRejectedValueOnce(new Error('Request rejected'));
-            const get_plans_spy = jest.spyOn(api, 'get_plans')
-                .mockResolvedValueOnce(get_plans_resp);
-            jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
-            jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
-            const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-
-            const resp = await caller.get_tests();
-            get_plans_spy.mockRestore();
-            get_tests_spy.mockRestore();
-
-            expect(resp).toBeFalsy();
-            expect(caller._tests).toEqual([]);
-            expect(caller._runs_ids).toHaveLength(0);
-            expect(caller._milestone_id).toBeFalsy();
         });
 
         it('get_tests if get_plans rejected', async () => {
@@ -152,8 +156,7 @@ describe('Caller tests', function () {
             const api = require('../lib/interface');
 
             caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
-
-            jest.spyOn(api, 'get_milestones').mockResolvedValueOnce(get_milestones_resp);
+            caller._milestone_id = milestone_id;
             jest.spyOn(api, 'get_plans').mockRejectedValueOnce(new Error('Request rejected'));
             const get_plan_spy = jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
@@ -168,7 +171,6 @@ describe('Caller tests', function () {
 
             expect(caller._tests).toEqual([case_1]);
             expect(caller._runs_ids).toHaveLength(1);
-            expect(caller._milestone_id).toEqual(milestone_id);
         });
 
         it('get_tests if get_plan rejected', async () => {
@@ -176,8 +178,7 @@ describe('Caller tests', function () {
             const api = require('../lib/interface');
 
             caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
-
-            jest.spyOn(api, 'get_milestones').mockResolvedValueOnce(get_milestones_resp);
+            caller._milestone_id = milestone_id;
             jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
             jest.spyOn(api, 'get_plan').mockRejectedValueOnce(new Error('Request rejected'));
             const get_runs_spy = jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
@@ -192,7 +193,6 @@ describe('Caller tests', function () {
 
             expect(caller._tests).toEqual([case_1]);
             expect(caller._runs_ids).toHaveLength(1);
-            expect(caller._milestone_id).toEqual(milestone_id);
         });
 
         it('get_tests if get_runs rejected', async () => {
@@ -200,8 +200,7 @@ describe('Caller tests', function () {
             const api = require('../lib/interface');
 
             caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
-
-            jest.spyOn(api, 'get_milestones').mockResolvedValueOnce(get_milestones_resp);
+            caller._milestone_id = milestone_id;
             jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
             jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockRejectedValueOnce(new Error('Request rejected'));
@@ -213,7 +212,6 @@ describe('Caller tests', function () {
 
             expect(caller._tests).toEqual([case_2]);
             expect(caller._runs_ids).toHaveLength(runs_len);
-            expect(caller._milestone_id).toEqual(milestone_id);
         });
 
         it('get_tests if get_tests rejected', async () => {
@@ -221,8 +219,7 @@ describe('Caller tests', function () {
             const api = require('../lib/interface');
 
             caller.init({milestone: milestone_name, project_id: 1, suite_mode: 2});
-
-            jest.spyOn(api, 'get_milestones').mockResolvedValueOnce(get_milestones_resp);
+            caller._milestone_id = milestone_id;
             jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
             jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
@@ -235,76 +232,87 @@ describe('Caller tests', function () {
             expect(resp).toBeFalsy();
             expect(caller._tests).toEqual([]);
             expect(caller._runs_ids).toHaveLength(runs_len+1);
-            expect(caller._milestone_id).toEqual(milestone_id);
         });
 
     });
 
     describe('add_results', function () {
 
-        it('add_results successful', async() => {
+        it('add_results successful with tests', async() => {
             const api = require('../lib/interface');
             const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
             const resp = {statusCode: 200, body: [tr_result(testcase)]};
-
+            caller._tests = [{case_id: testResult.duration, run_id: 1}];
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockResolvedValueOnce(resp.body);
+            const get_case_spy = jest.spyOn(api, 'get_case');
+            const get_suite_spy = jest.spyOn(api, 'get_suite');
+            const update_run_spy = jest.spyOn(api, 'update_run');
+            const add_run_spy = jest.spyOn(api, 'add_run');
 
-            const res = await caller.add_results([{id: 1, results: [testcase]}]);
+            const res = await caller.add_results([testcase]);
+
+            expect(add_results_for_cases_spy).toHaveBeenCalledTimes(1);
+            expect(add_results_for_cases_spy).toHaveBeenCalledWith(1, {"results": [testcase]});
+            expect(get_case_spy).toHaveBeenCalledTimes(0)
+            expect(get_suite_spy).toHaveBeenCalledTimes(0)
+            expect(update_run_spy).toHaveBeenCalledTimes(0)
+            expect(add_run_spy).toHaveBeenCalledTimes(0)
             add_results_for_cases_spy.mockRestore();
-
-            expect(res).toEqual(1);
+            expect(res).toEqual({"runs_count": 1, "tests_count": 1});
         });
 
         it('add_results with wrong results: array', async() => {
-            const caller = require('../src/caller');
-            let utils = new Utils();
-            const testResult = passed();
-            const testcase = utils.formatCase(testResult);
-            let resp = null;
 
-            try {
-                resp = await caller.add_results([{id: 1, results: [testcase]}]);
-            }
-            catch (err) {
-                expect(err.name).toEqual('Testrail Jest Reporter Error');
-            }
-            expect(resp).toBeFalsy();
-        });
-
-        it('add_results with wrong results: object', async() => {
+            const api = require('../lib/interface');
             const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
-            let resp = null;
+            caller._tests = [{case_id: testResult.duration, run_id: 1}];
+            const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases');
+            const get_case_spy = jest.spyOn(api, 'get_case');
+            const get_suite_spy = jest.spyOn(api, 'get_suite');
+            const update_run_spy = jest.spyOn(api, 'update_run');
+            const add_run_spy = jest.spyOn(api, 'add_run');
 
-            try {
-                resp = await caller.add_results([{id: 1, results: testcase}]);
-            }
-            catch (err) {
-                expect(err.name).toEqual('Testrail Jest Reporter Error');
-            }
-            expect(resp).toBeFalsy();
+            const res = await caller.add_results([[testcase]]);
+
+            expect(add_results_for_cases_spy).toHaveBeenCalledTimes(0);
+            expect(get_case_spy).toHaveBeenCalledTimes(0)
+            expect(get_suite_spy).toHaveBeenCalledTimes(0)
+            expect(update_run_spy).toHaveBeenCalledTimes(0)
+            expect(add_run_spy).toHaveBeenCalledTimes(0)
+            add_results_for_cases_spy.mockRestore();
+            expect(res).toEqual({"runs_count": 0, "tests_count": 0});
         });
 
-        it('add_results with wrong results: not an object', async() => {
+        it('add_results with wrong tests: array', async() => {
+
+            const api = require('../lib/interface');
             const caller = require('../src/caller');
             let utils = new Utils();
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
-            let resp = null;
+            caller._tests = [[{case_id: testResult.duration, run_id: 1}]];
+            const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases');
+            const get_case_spy = jest.spyOn(api, 'get_case');
+            const get_suite_spy = jest.spyOn(api, 'get_suite');
+            const update_run_spy = jest.spyOn(api, 'update_run');
+            const add_run_spy = jest.spyOn(api, 'add_run');
 
-            try {
-                resp = await caller.add_results([{id: 1, results: [testcase, 'test']}]);
-            }
-            catch (err) {
-                expect(err.name).toEqual('Testrail Jest Reporter Error');
-            }
-            expect(resp).toBeFalsy();
+            const res = await caller.add_results([testcase]);
+
+            expect(add_results_for_cases_spy).toHaveBeenCalledTimes(0);
+            expect(get_case_spy).toHaveBeenCalledTimes(0)
+            expect(get_suite_spy).toHaveBeenCalledTimes(0)
+            expect(update_run_spy).toHaveBeenCalledTimes(0)
+            expect(add_run_spy).toHaveBeenCalledTimes(0)
+            add_results_for_cases_spy.mockRestore();
+            expect(res).toEqual({"runs_count": 0, "tests_count": 0});
         });
 
         it('add_results add_results_for_cases rejected', async() => {
@@ -312,14 +320,15 @@ describe('Caller tests', function () {
             const caller = require('../src/caller');
             const console_spy = jest.spyOn(global.console, 'log');
             let utils = new Utils();
-            const err = new Error('Request rejected');
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
+            caller._tests = [{case_id: testResult.duration, run_id: 1}];
 
+            const err = new Error('Request rejected');
             const add_results_for_cases_spy = jest.spyOn(api, 'add_results_for_cases')
                 .mockRejectedValue(err);
 
-            const res = await caller.add_results([{id: 1, results: [testcase]}]);
+            const res = await caller.add_results([testcase]);
             add_results_for_cases_spy.mockRestore();
 
             expect(res).toBeFalsy();
