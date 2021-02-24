@@ -1,5 +1,7 @@
 'use strict';
-const chalk = require('chalk'), tr_api = require('../lib/interface'), ReporterError = require('../lib/error');
+const chalk = require('chalk'), tr_api = require('../lib/interface'), ReporterError = require('../lib/error'),
+    Utils = require('./utils');
+const utils = new Utils();
 const Ajv = require("ajv").default;
 const ajv = new Ajv({
     strict: false,
@@ -30,7 +32,7 @@ function init(_options) {
  * @return {Promise<number | boolean>}
  */
 async function add_results(testsResults) {
-    const results = groupCases.call(this, testsResults);
+    const results = utils.groupCases(testsResults, this._tests);
     let runs = results.filter(result => result.hasOwnProperty('run_id'));
     const cases = results.filter(result => result.hasOwnProperty('case_id'));
     if (!!cases.length) {
@@ -265,21 +267,4 @@ async function update_run(cases) {
     }
 
     return runs;
-}
-
-function groupCases(jest_result_list) {
-    let results = [];
-    for (let i=0, len = jest_result_list.length; i<len; i++) {
-        const test = this._tests ?
-            this._tests.find(test => test.case_id === jest_result_list[i].case_id)
-            : null;
-        if (test) {
-            const index = results.findIndex(run => run.run_id === test.run_id);
-            if (~index) results[index].results.push(jest_result_list[i]);
-            else results.push({run_id: test.run_id, "results": [jest_result_list[i]]});
-        } else {
-            results.push({case_id: jest_result_list[i].case_id, "result": jest_result_list[i]})
-        }
-    }
-    return results;
 }

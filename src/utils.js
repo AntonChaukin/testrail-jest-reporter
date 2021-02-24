@@ -92,49 +92,36 @@ class Utils {
         }
     }
 
-    merge = merge
     isPlainObject = isPlainObject
     isArray = isArray
+    groupCases = groupCases
 
 }
 
 module.exports = Utils;
 
 /**
- * Accepts varargs expecting each argument to be an object, then
- * immutably merges the properties of each object and returns result.
+ * Group jest test results in a testrail runs or a single cases
  *
- * When multiple objects contain the same key the later object in
- * the arguments list will take precedence.
- *
- * Example:
- *
- * ```js
- * var result = merge({foo: 123}, {foo: 456});
- * console.log(result.foo); // outputs 456
- * ```
- *
- * @param {Object} obj1 Object to merge
- * @returns {Object} Result of all merge properties
+ * @param {array} jest_result_list
+ * @param {array} tr_tests
+ * @return {[] || [{case_id, result}, {run_id, results}]}
  */
-function merge(/* obj1, obj2, obj3, ... */) {
-    let result = {};
-    function assignValue(val, key) {
-        if (isPlainObject(result[key]) && isPlainObject(val)) {
-            result[key] = merge(result[key], val);
-        } else if (isPlainObject(val)) {
-            result[key] = merge({}, val);
-        } else if (isArray(val)) {
-            result[key] = val.slice();
+function groupCases(jest_result_list, tr_tests) {
+    let results = [];
+    for (let i=0, len = jest_result_list.length; i<len; i++) {
+        const test = tr_tests ?
+            tr_tests.find(test => test.case_id === jest_result_list[i].case_id)
+            : null;
+        if (test) {
+            const index = results.findIndex(run => run.run_id === test.run_id);
+            if (~index) results[index].results.push(jest_result_list[i]);
+            else results.push({run_id: test.run_id, "results": [jest_result_list[i]]});
         } else {
-            result[key] = val;
+            results.push({case_id: jest_result_list[i].case_id, "result": jest_result_list[i]})
         }
     }
-
-    for (let i = 0, l = arguments.length; i < l; i++) {
-        this.forEach(arguments[i], assignValue);
-    }
-    return result;
+    return results;
 }
 
 /**
