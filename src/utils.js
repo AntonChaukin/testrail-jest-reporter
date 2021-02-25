@@ -1,4 +1,11 @@
 'use strict';
+require('@babel/plugin-syntax-class-properties');
+const chalk = require('chalk'), Ajv = require("ajv").default;
+const ajv = new Ajv({
+    strict: false,
+    allErrors: true,
+});
+const error = chalk.bold.red;
 
 class Utils {
     constructor(_options) {
@@ -63,7 +70,7 @@ class Utils {
         let _t = title.match(regex);
         _t = _t || [];
         for (let i=0, len=_t.length; i<len; i++) {
-            case_ids.push(_t[i].match(/[?\d]{3,6}/gm))
+            case_ids.push(_t[i].match(/\d+/gm)[0])
         }
         return case_ids.length && case_ids;
     }
@@ -92,72 +99,110 @@ class Utils {
         }
     }
 
-    merge = merge
-    isPlainObject = isPlainObject
-    isArray = isArray
+    /**
+     * Group jest test results in a testrail runs or a single cases
+     *
+     * @param {array} jest_result_list
+     * @param {array} tr_tests
+     * @return {[] || [{case_id, result}, {run_id, results}]}
+     */
+    groupCases(jest_result_list, tr_tests) {
+        const valid_results = ajv.validate({
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "case_id": {
+                            "type": "integer"
+                        },
+                        "status_id": {
+                            "type": "integer"
+                        },
+                        "comment": {
+                            "type": "string"
+                        },
+                        "elapsed": {
+                            "type": "string"
+                        },
+                        "defects": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["case_id", "status_id", "comment", "elapsed"]
+                }
+            },
+            jest_result_list);
+        if (!valid_results ) {
+            console.log(error(`\nCan not update cases of test JSON schema error
+                    \nContext: ${JSON.stringify(ajv.errors, null, 2)}`));
+            return [];
+        }
+        const valid_tests_list = ajv.validate({
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "case_id": {
+                            "type": "integer"
+                        },
+                        "run_id": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": ["case_id", "run_id"]
+                }
+            },
+            tr_tests);
+        if (!valid_tests_list) {
+            console.log(error(`\nCan not update cases of test JSON schema error
+                    \nContext: ${JSON.stringify(ajv.errors, null, 2)}`));
+            return [];
+        }
+        let results = [];
+        for (let i=0, len = jest_result_list.length; i<len; i++) {
+            const test = tr_tests ?
+                tr_tests.find(test => test.case_id === jest_result_list[i].case_id)
+                : null;
+            if (test) {
+                const index = results.findIndex(run => run.run_id === test.run_id);
+                if (~index) results[index].results.push(jest_result_list[i]);
+                else results.push({run_id: test.run_id, "results": [jest_result_list[i]]});
+            } else {
+                results.push({case_id: jest_result_list[i].case_id, "result": jest_result_list[i]})
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Determine if a value is a plain Object
+     *
+     * @param {Object} val The value to test
+     * @return {boolean} True if value is a plain Object, otherwise false
+     */
+    isPlainObject(val) {
+        if (toString.call(val) !== '[object Object]') {
+            return false;
+        }
+
+        const prototype = Object.getPrototypeOf(val);
+        return prototype === null || prototype === Object.prototype;
+    }
+
+    /**
+     * Determine if a value is an Array
+     *
+     * @param {Object} val The value to test
+     * @returns {boolean} True if value is an Array, otherwise false
+     */
+    isArray(val) {
+        return toString.call(val) === '[object Array]';
+    }
 
 }
 
 module.exports = Utils;
 
-/**
- * Accepts varargs expecting each argument to be an object, then
- * immutably merges the properties of each object and returns result.
- *
- * When multiple objects contain the same key the later object in
- * the arguments list will take precedence.
- *
- * Example:
- *
- * ```js
- * var result = merge({foo: 123}, {foo: 456});
- * console.log(result.foo); // outputs 456
- * ```
- *
- * @param {Object} obj1 Object to merge
- * @returns {Object} Result of all merge properties
- */
-function merge(/* obj1, obj2, obj3, ... */) {
-    let result = {};
-    function assignValue(val, key) {
-        if (isPlainObject(result[key]) && isPlainObject(val)) {
-            result[key] = merge(result[key], val);
-        } else if (isPlainObject(val)) {
-            result[key] = merge({}, val);
-        } else if (isArray(val)) {
-            result[key] = val.slice();
-        } else {
-            result[key] = val;
-        }
-    }
-
-    for (let i = 0, l = arguments.length; i < l; i++) {
-        this.forEach(arguments[i], assignValue);
-    }
-    return result;
-}
-
-/**
- * Determine if a value is a plain Object
- *
- * @param {Object} val The value to test
- * @return {boolean} True if value is a plain Object, otherwise false
- */
-function isPlainObject(val) {
-    if (toString.call(val) !== '[object Object]') {
-        return false;
-    }
-
-    const prototype = Object.getPrototypeOf(val);
-    return prototype === null || prototype === Object.prototype;
-}
-
-/**
- * Determine if a value is an Array
- *
- * @param {Object} val The value to test
- * @returns {boolean} True if value is an Array, otherwise false
- */
-function isArray(val) {
-    return toString.call(val) === '[object Array]';
-}

@@ -5,13 +5,12 @@ const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const message = chalk.bold.green;
-const {baseUrl, regex, milestone, project_id, user, pass} = require(configPath);
+const {baseUrl, regex, milestone, project_id, suite_mode, user, pass} = require(configPath);
 const Utils = require('./src/utils');
 const caller = require('./src/caller');
 
 class CustomTestrailReporter {
-    tests = null
-    results = []
+
     /**
      * constructor for the reporter
      *
@@ -24,9 +23,12 @@ class CustomTestrailReporter {
         this._options.milestone = _options && _options.milestone || milestone;
         this._options.baseUrl = _options && _options.baseUrl || baseUrl;
         this._options.project_id = _options && _options.project_id || project_id;
+        this._options.suite_mode = _options && _options.suite_mode || suite_mode;
+        this._options.run_update = (_options && _options.hasOwnProperty('publish_results')) ? _options.publish_results : true;
         this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
         caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
+        this.results = []
     }
 
     /**
@@ -37,14 +39,13 @@ class CustomTestrailReporter {
      * @param  _options - Run configuration
      */
     onRunStart(_results, _options) {
-        if (this._options.project_id) {
-            caller.get_tests()
-                .then(_tests => this.tests = _tests);
+        if (this._options.project_id && !isNaN(this._options.project_id) && this._options.milestone) {
+            caller.get_milestone_id();
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
-            console.log(warning(`You must define "project_id" in jets configurations!
-                \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1" }] ]`));
+            console.log(warning(`You must define "project_id"  and "milestone" in jets configurations!
+                \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1", "milestone": "Sprint 1" }] ]`));
         }
     }
 
@@ -66,10 +67,14 @@ class CustomTestrailReporter {
      * @param _aggregatedResult - Results for the test run at the point in time of the test suite being executed
      */
     onTestResult(_test, _testResults, _aggregatedResult) {
-        if (this.tests) {
+        if (caller._milestone_id) {
             _testResults.testResults.forEach((result) => {
                 const testcases = this._utils.formatCase(result);
-                if (testcases) this._accumulateResults(testcases);
+                if (testcases) {
+                    for (let i=0, len = testcases.length; i<len; i++) {
+                        this.results.push(testcases[i])
+                    }
+                }
             });
         }
     }
@@ -82,26 +87,24 @@ class CustomTestrailReporter {
      * @param {JestTestRunResult} _results - Results from the test run
      */
     onRunComplete(_contexts, _results) {
-        caller.add_results(this.results)
-            .then(count => {
-                if (count) console
-                    .log(message(`Testrail Jest Reporter updated ${count} tests in ${this.results.length} runs.`));
-            });
+        if (caller._milestone_id) {
+            caller.get_tests()
+                .then(() => {
+                    return caller.add_results(this.results)
+                })
+                .then(({tests_count, runs_count}) => {
+                    if (tests_count) console
+                        .log(message(`Testrail Jest Reporter updated ${tests_count} tests in ${runs_count} runs.`));
+                })
+                .catch(e => {
+                    console.log(error(`! Testrail Jest Reporter Error !\n${e.stack}`));
+                });
+        }
     }
 
     getLastError() {
         if (this._shouldFail) {
             return new Error('Testrail Jest Reporter reported an error');
-        }
-    }
-    _accumulateResults(testcases_list) {
-        for (let i=0, len = testcases_list.length; i<len; i++) {
-            let index = -1;
-            const test = this.tests.find(test => test.case_id === testcases_list[i].case_id);
-            const run_id = test && test.run_id;
-            if (run_id && !!this.results.length) index = this.results.findIndex(run => run.id === run_id);
-            if (~index) this.results[index].results.push(testcases_list[i]);
-            else if (run_id) this.results.push({id: run_id, "results": [testcases_list[i]]});
         }
     }
 }
