@@ -1,0 +1,11 @@
+{
+  "presets": [],
+  "env": {
+    "test": {
+      "presets": [
+        ["env", { "targets": { "node": "current" }}]
+      ]
+    }
+  },
+  "plugins": ["@babel/plugin-syntax-class-properties"]
+}
