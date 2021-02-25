@@ -10,7 +10,8 @@ describe('Reporter tests', function (){
         it('without "project_id" console error', () => {
             const reporter = new Reporter();
             const caller = require('../src/caller');
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValue([]);
             const caller_spy = jest.spyOn(caller, 'get_tests');
             reporter.onRunStart();
             expect(log_spy).toHaveBeenCalledTimes(2);
@@ -22,7 +23,8 @@ describe('Reporter tests', function (){
         it('if "project_id" is null', () => {
             const reporter = new Reporter(null, {project_id: null, milestone: "Sprint 1"});
             const caller = require('../src/caller');
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValue([]);
             const caller_spy = jest.spyOn(caller, 'get_tests');
             reporter.onRunStart();
             expect(log_spy).toHaveBeenCalledTimes(2);
@@ -34,7 +36,8 @@ describe('Reporter tests', function (){
         it('if "project_id" is empty string', () => {
             const reporter = new Reporter(null, {project_id: '', milestone: "Sprint 1"});
             const caller = require('../src/caller');
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValue([]);
             const caller_spy = jest.spyOn(caller, 'get_tests');
             reporter.onRunStart();
             expect(log_spy).toHaveBeenCalledTimes(2);
@@ -46,7 +49,8 @@ describe('Reporter tests', function (){
         it('if "project_id" is string', () => {
             const reporter = new Reporter(null, {project_id: 'log', milestone: "Sprint 1"});
             const caller = require('../src/caller');
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValue([]);
             const caller_spy = jest.spyOn(caller, 'get_tests');
             reporter.onRunStart();
             expect(log_spy).toHaveBeenCalledTimes(2);
@@ -58,7 +62,8 @@ describe('Reporter tests', function (){
         it('with "project_id" and without "milestone"', async () => {
             const reporter = new Reporter(null, {project_id: 1});
             const caller = require('../src/caller');
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValue([]);
             const caller_spy = jest.spyOn(caller, 'get_tests');
             reporter.onRunStart();
             expect(log_spy).toHaveBeenCalledTimes(2);
@@ -163,7 +168,8 @@ describe('Reporter tests', function (){
             const testResult = passed();
             const results = utils.formatCase(testResult);
             reporter.results = results;
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValueOnce(false);
             const caller_spy = jest.spyOn(caller, 'add_results')
@@ -186,7 +192,8 @@ describe('Reporter tests', function (){
         it('"get_tests" method rejected', async () => {
             const caller = require('../src/caller');
             const reporter = new Reporter();
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             const err = new Error('Method rejected');
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockRejectedValueOnce(err);
@@ -209,7 +216,8 @@ describe('Reporter tests', function (){
         it('"add_results" method rejected', async () => {
             const caller = require('../src/caller');
             const reporter = new Reporter();
-            const log_spy = jest.spyOn(global.console, 'log');
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             const err = new Error('Method rejected');
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValueOnce(false);

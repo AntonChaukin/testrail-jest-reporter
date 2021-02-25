@@ -157,19 +157,27 @@ describe('Utils tests', function () {
         });
 
         it('validate results', async () => {
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             let utils = new Utils();
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
             const results = utils.groupCases(testcase,[]);
             expect(results).toHaveLength(0);
+            expect(log_spy).toHaveBeenCalledTimes(1);
+            log_spy.mockRestore();
         });
 
         it('validate tests', async () => {
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             let utils = new Utils();
             const testResult = passed();
             const [testcase] = utils.formatCase(testResult);
             const results = utils.groupCases([testcase],testcase);
             expect(results).toHaveLength(0);
+            expect(log_spy).toHaveBeenCalledTimes(1);
+            log_spy.mockRestore();
         });
     });
 })
