@@ -1,4 +1,5 @@
 'use strict';
+require('@babel/plugin-syntax-class-properties');
 const chalk = require('chalk'), Ajv = require("ajv").default;
 const ajv = new Ajv({
     strict: false,
