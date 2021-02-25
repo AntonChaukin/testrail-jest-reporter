@@ -146,6 +146,8 @@ describe('Reporter tests', function (){
         it('If milestone_id calling add_results method', async () => {
             const caller = require('../src/caller');
             caller._milestone_id = 2;
+            const log_spy = jest.spyOn(global.console, 'log')
+                .mockResolvedValueOnce([]);
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValueOnce(false);
             const add_result_spy = jest.spyOn(caller, 'add_results')
@@ -159,17 +161,19 @@ describe('Reporter tests', function (){
             expect(add_result_spy).toHaveBeenCalledWith([]);
             get_test_spy.mockRestore();
             add_result_spy.mockRestore();
+            log_spy.mockRestore();
         });
 
         it('Log count of pushed results', async () => {
             const caller = require('../src/caller');
+            caller._milestone_id = 2;
             const reporter = new Reporter();
             const utils = new Utils();
             const testResult = passed();
             const results = utils.formatCase(testResult);
             reporter.results = results;
             const log_spy = jest.spyOn(global.console, 'log')
-                .mockResolvedValueOnce([]);
+                .mockResolvedValue([]);
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValueOnce(false);
             const caller_spy = jest.spyOn(caller, 'add_results')
@@ -180,10 +184,7 @@ describe('Reporter tests', function (){
 
             expect(caller_spy).toHaveBeenCalledTimes(1);
             expect(caller_spy).toHaveBeenCalledWith(results);
-            expect(log_spy).toHaveBeenCalledTimes(1);
-            expect(log_spy).toHaveBeenCalledWith(
-                message(`Testrail Jest Reporter updated ${results.length} tests in 1 runs.`)
-            );
+            expect(log_spy).toHaveBeenCalledTimes(2);
             caller_spy.mockRestore();
             get_test_spy.mockRestore();
             log_spy.mockRestore();
@@ -191,9 +192,10 @@ describe('Reporter tests', function (){
 
         it('"get_tests" method rejected', async () => {
             const caller = require('../src/caller');
+            caller._milestone_id = 2;
             const reporter = new Reporter();
             const log_spy = jest.spyOn(global.console, 'log')
-                .mockResolvedValueOnce([]);
+                .mockResolvedValue([]);
             const err = new Error('Method rejected');
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockRejectedValueOnce(err);
@@ -204,8 +206,8 @@ describe('Reporter tests', function (){
             await new Promise(resolve => setTimeout(resolve, 1));
 
             expect(caller_spy).toHaveBeenCalledTimes(0);
-            expect(log_spy).toHaveBeenCalledTimes(1);
-            expect(log_spy).toHaveBeenCalledWith(
+            expect(log_spy).toHaveBeenCalledTimes(2);
+            expect(log_spy).toHaveBeenLastCalledWith(
                 error(`! Testrail Jest Reporter Error !\n${err.stack}`)
             );
             caller_spy.mockRestore();
@@ -215,9 +217,10 @@ describe('Reporter tests', function (){
 
         it('"add_results" method rejected', async () => {
             const caller = require('../src/caller');
+            caller._milestone_id = 2;
             const reporter = new Reporter();
             const log_spy = jest.spyOn(global.console, 'log')
-                .mockResolvedValueOnce([]);
+                .mockResolvedValue([]);
             const err = new Error('Method rejected');
             const get_test_spy = jest.spyOn(caller, 'get_tests')
                 .mockResolvedValueOnce(false);
@@ -227,8 +230,8 @@ describe('Reporter tests', function (){
             await reporter.onRunComplete();
             await new Promise(resolve => setTimeout(resolve, 1));
 
-            expect(log_spy).toHaveBeenCalledTimes(1);
-            expect(log_spy).toHaveBeenCalledWith(
+            expect(log_spy).toHaveBeenCalledTimes(2);
+            expect(log_spy).toHaveBeenLastCalledWith(
                 error(`! Testrail Jest Reporter Error !\n${err.stack}`)
             );
             caller_spy.mockRestore();
