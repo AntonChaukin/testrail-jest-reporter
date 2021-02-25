@@ -58,7 +58,7 @@ module.exports = {
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
                 "milestone": '<milestone_name>',
-                "suite_mode": "3"
+                "suite_mode": "3",
                 "statuses": {"pending": "7"}
             }
         ]
