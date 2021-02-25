@@ -8,6 +8,7 @@ v1.1.0 / 2021-02-25
 * Added CI test Actions  
 * Added Changelog
 * Fixed Node 10.x maintenance
+* Fixed JSON schemas
 
 v1.0.8 / 2021-02-12
 ==================
