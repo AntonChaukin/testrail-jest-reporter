@@ -10,8 +10,7 @@ const Utils = require('./src/utils');
 const caller = require('./src/caller');
 
 class CustomTestrailReporter {
-    tests = null
-    results = []
+
     /**
      * constructor for the reporter
      *
@@ -29,6 +28,7 @@ class CustomTestrailReporter {
         this._options.auth = 'Basic ' + new Buffer.from(user + ':' + pass, 'utf-8').toString('base64');
         caller.init(this._options);
         this._utils = new Utils({regex: regex || null, statuses: _options && _options.statuses});
+        this.results = []
     }
 
     /**
