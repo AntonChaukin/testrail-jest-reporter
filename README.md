@@ -34,7 +34,7 @@ module.exports = {
   reporters: [
     "default",
     [
-        "jest-2-testrail", 
+        "testrail-jest-reporter", 
         { project_id: 1, 
             baseUrl: 'http://localhost', 
             milestone: '<milestone_name>',
@@ -53,7 +53,7 @@ module.exports = {
     "reporters": [
       "default",
         [
-            "jest-2-testrail",
+            "testrail-jest-reporter",
             { 
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
