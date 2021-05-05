@@ -44,7 +44,7 @@ class CustomTestrailReporter {
         }
         else {
             console.log(error(`! Testrail Jest Reporter Error !`));
-            console.log(warning(`You must define "project_id"  and "milestone" in jets configurations!
+            console.log(warning(`You must define "project_id"  and "milestone" in jest configurations!
                 \n Example: "reporters": [ ["testrail-jest-reporter", { "project_id": "1", "milestone": "Sprint 1" }] ]`));
         }
     }
