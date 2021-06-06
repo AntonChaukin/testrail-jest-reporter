@@ -1,5 +1,6 @@
 'use strict';
 require('@babel/plugin-syntax-class-properties');
+const path = require('path'), fs = require('fs');
 const chalk = require('chalk'), Ajv = require("ajv").default;
 const ajv = new Ajv({
     strict: false,
@@ -200,6 +201,22 @@ class Utils {
      */
     isArray(val) {
         return toString.call(val) === '[object Array]';
+    }
+
+    readFilesList(pathToDir = path.resolve(__dirname,'./'), filesList = []) {
+        const regex = this._regex;
+        const initialList = fs.readdirSync(pathToDir);
+        for(let i=0, len=initialList.length; i<len; i++) {
+            const joinedPath = path.join(pathToDir, initialList[i]);
+            if (fs.statSync(joinedPath).isDirectory() && initialList[i] !== 'node_modules') {
+                filesList = this.readFilesList(joinedPath, filesList);
+            }
+            else if (initialList[i].match(regex)) {
+                const case_id = initialList[i].match(/\d+/gm)[0];
+                filesList.push({case_id, file: joinedPath})
+            }
+        }
+        return filesList;
     }
 
 }
