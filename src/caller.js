@@ -205,7 +205,8 @@ async function update_run(cases) {
         },
         cases);
     if (!valid) {
-        console.log(error(`\nCan not update cases of test JSON schema error
+        console.log(error(`\nCan not update list of cases of test Run: JSON schema error
+                    \nNew test cases was not added to test Run
                     \nContext: ${JSON.stringify(cases)}\n${JSON.stringify(ajv.errors, null, 2)}`));
         return [];
     }
