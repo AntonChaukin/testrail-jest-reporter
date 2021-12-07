@@ -84,7 +84,7 @@ function get_tests() {
     this._tests = [];
     return tr_api.get_plans(this._project_id, {is_completed: 0, milestone_id: this._milestone_id})
         .then(res => {
-            if (res) {
+            if (res && res.plans) {
                 return Promise.all(res.plans.map(plan => tr_api.get_plan(plan.id)));
             }
             return false;
@@ -116,7 +116,7 @@ function get_tests() {
             return false;
         })
         .then(res => {
-            if (res?.runs) {
+            if (res && res.runs) {
                 const _runs = res.runs;
                 for (let i=0, len = _runs.length; i<len; i++) {
                     if (_runs[i]?.id) this._runs_ids
