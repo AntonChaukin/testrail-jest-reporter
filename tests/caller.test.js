@@ -17,15 +17,39 @@ describe('Caller tests', function () {
         get_project_resp = tr_get_project();
         milestone = tr_milestone({name: milestone_name});
         milestone_id = milestone.id;
-        get_milestones_resp = [tr_milestone(), milestone];
+        get_milestones_resp = {
+            "offset": 0,
+            "limit": 250,
+            "size": 250,
+            "_links": {
+                "next": null,
+                "prev": null},
+            "milestones": [tr_milestone(), milestone]
+        };
         get_plan_resp = tr_plan({milestone_id: milestone_id});
-        get_plans_resp = [Object.assign({}, get_plan_resp)];
+        get_plans_resp = {
+            "offset": 0,
+            "limit": 250,
+            "size": 250,
+            "_links": {
+                "next": null,
+                "prev": null},
+            "plans": [Object.assign({}, get_plan_resp)]
+        };
         for(let i=0, i_len = get_plan_resp.entries.length; i<i_len; i++) {
             let entry = get_plan_resp.entries[i];
             for(let j=0, j_len=entry.runs.length; j<j_len; j++) {runs_len++}
         }
         run = tr_run({milestone_id: milestone_id});
-        get_runs_resp = [run];
+        get_runs_resp = {
+            "offset": 0,
+            "limit": 250,
+            "size": 250,
+            "_links": {
+                "next": null,
+                "prev": null},
+            "runs": [run]
+        };
         case_1 = {'case_id': duration(), 'run_id': run.id};
         case_2 = {'case_id': duration(), 'run_id': get_plan_resp.entries[0].runs[0].id};
         test_1 = tr_test(case_1);
@@ -149,9 +173,33 @@ describe('Caller tests', function () {
             jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
             const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-                .mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_1]
+                })
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_2]
+                })
+                .mockResolvedValue({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": []
+                });
 
             await caller.get_tests();
             get_tests_spy.mockRestore();
@@ -172,9 +220,33 @@ describe('Caller tests', function () {
             const get_plan_spy = jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
             const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-                .mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_1]
+                })
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_2]
+                })
+                .mockResolvedValue({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": []
+                });
 
             await caller.get_tests();
             get_plan_spy.mockRestore();
@@ -199,9 +271,33 @@ describe('Caller tests', function () {
             jest.spyOn(api, 'get_plan').mockRejectedValueOnce(req_error);
             const get_runs_spy = jest.spyOn(api, 'get_runs').mockResolvedValueOnce(get_runs_resp);
             const get_tests_spy = jest.spyOn(api, 'get_tests')
-                .mockResolvedValueOnce([test_1])
-                .mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_1]
+                })
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_2]
+                })
+                .mockResolvedValue({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": []
+                });
 
             await caller.get_tests();
             get_runs_spy.mockRestore()
@@ -225,8 +321,25 @@ describe('Caller tests', function () {
             jest.spyOn(api, 'get_plans').mockResolvedValueOnce(get_plans_resp);
             jest.spyOn(api, 'get_plan').mockResolvedValueOnce(get_plan_resp);
             jest.spyOn(api, 'get_runs').mockRejectedValueOnce(req_error);
-            const get_tests_spy = jest.spyOn(api, 'get_tests').mockResolvedValueOnce([test_2])
-                .mockResolvedValue([]);
+            const get_tests_spy = jest.spyOn(api, 'get_tests')
+                .mockResolvedValueOnce({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": [test_2]
+                })
+                .mockResolvedValue({
+                    "offset": 0,
+                    "limit": 250,
+                    "size": 250,
+                    "_links": {
+                        "next": null,
+                        "prev": null},
+                    "tests": []
+                });
 
             await caller.get_tests();
             get_tests_spy.mockRestore();

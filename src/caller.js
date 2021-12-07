@@ -65,7 +65,7 @@ function get_milestone_id() {
     return get_suite_mode.call(this)
         .then(() => tr_api.get_milestones(this._project_id, {is_completed: 0}))
         .then(res => {
-            const _milestone = res.filter((milestone) => milestone.name === this._milestone_name);
+            const _milestone = res.milestones.filter((milestone) => milestone.name === this._milestone_name);
             if (_milestone && !!_milestone.length) {
                 this._milestone_id = _milestone[0].id;
             } else {
@@ -85,7 +85,7 @@ function get_tests() {
     return tr_api.get_plans(this._project_id, {is_completed: 0, milestone_id: this._milestone_id})
         .then(res => {
             if (res) {
-                return Promise.all(res.map(plan => tr_api.get_plan(plan.id)));
+                return Promise.all(res.plans.map(plan => tr_api.get_plan(plan.id)));
             }
             return false;
         })
@@ -116,10 +116,11 @@ function get_tests() {
             return false;
         })
         .then(res => {
-            if (res) {
-                for (let i=0, len = res.length; i<len; i++) {
-                    if (res[i] && res[i].id) this._runs_ids
-                        .push({id: res[i].id, suite_id: res[i].suite_id, plan_id: null});
+            if (res?.runs) {
+                const _runs = res.runs;
+                for (let i=0, len = _runs.length; i<len; i++) {
+                    if (_runs[i]?.id) this._runs_ids
+                        .push({id: _runs[i].id, suite_id: _runs[i].suite_id, plan_id: null});
                 }
             }
             if (!!this._runs_ids.length) {
@@ -130,7 +131,7 @@ function get_tests() {
         .then(res => {
             if (res) {
                 for(let i=0, len=res.length; i<len; i++) {
-                    const tests = res[i];
+                    const tests = res[i].tests;
                     for(let j=0, t_len=tests.length; j<t_len; j++) {
                         if (tests[j] && tests[j].case_id) {
                             this._tests.push({"case_id": tests[j].case_id, "run_id": tests[j].run_id})
