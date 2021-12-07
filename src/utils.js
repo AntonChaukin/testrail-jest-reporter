@@ -11,6 +11,10 @@ class Utils {
     constructor(_options) {
         this._regex = _options && _options.regex || /[C][?\d]{3,6}/gm;
         this._statuses = _options && _options.statuses || {};
+        for (let key in this._statuses) {
+            if (isNaN(this._statuses[key])) this._statuses[key] = 4
+            else this._statuses[key] = Number(this._statuses[key]);
+        }
         this._status = {
             "failed": 5,
             "passed": 1,
@@ -136,7 +140,8 @@ class Utils {
             },
             jest_result_list);
         if (!valid_results ) {
-            console.log(error(`\nCan not update cases of test JSON schema error
+            console.log(error(`\nCan not update cases of test: JSON schema error
+                    \nTest case results not validated
                     \nContext: ${JSON.stringify(ajv.errors, null, 2)}`));
             return [];
         }
