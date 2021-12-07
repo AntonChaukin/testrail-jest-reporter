@@ -148,7 +148,7 @@ function tr_result(options) {
         "status_id": _status_id,
         "test_id": duration(),
         "version": ""
-}
+    }
 
 }
 
