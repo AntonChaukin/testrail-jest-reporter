@@ -119,7 +119,7 @@ function get_tests() {
             if (res && res.runs) {
                 const _runs = res.runs;
                 for (let i=0, len = _runs.length; i<len; i++) {
-                    if (_runs[i]?.id) this._runs_ids
+                    if (_runs[i] && _runs[i].id) this._runs_ids
                         .push({id: _runs[i].id, suite_id: _runs[i].suite_id, plan_id: null});
                 }
             }
