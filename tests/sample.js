@@ -112,11 +112,11 @@ function case_title(duration, cid = true) {
 }
 
 function index() {
-    return faker.random.number(20);
+    return faker.datatype.number(20);
 }
 
 function duration() {
-    return faker.random.number({min: 100, max: 99999});
+    return faker.datatype.number({min: 100, max: 99999});
 }
 
 /**
@@ -251,7 +251,7 @@ function tr_run(options) {
  * @private
  */
 function _tr_entry(options) {
-    const _id = faker.random.uuid();
+    const _id = faker.datatype.uuid();
     const _name = faker.random.words();
     const len = options.runs_count || faker.random.arrayElement([1,2]);
     const _plan_id = options.plan_id;
