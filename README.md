@@ -157,3 +157,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/AntonChaukin/testrail-jest-reporter/blob/main/LICENSE) file for details.
+
+## Support
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/chaukinantv)
