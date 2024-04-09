@@ -18,7 +18,7 @@ the Reporter must be specified in the jest-config.js or package.json file as par
  - This file should be created in your project's root folder.
  - Parameter is defined as 'project_id', which is the id of your project on TestRail.
  - Specify the TestRail server url as parameter 'baseUrl' _(recommended)_.
- - Specify the TestRail Milestone name as parameter 'milestone' _(recommended)_.
+ - Specify the TestRail Milestones name and description as parameter 'milestone' _(recommended)_.
  - Specify the TestRail **`suite mode`** id as parameter 'suite_mode' _(recommended)_. If that parameter is not specified, the Reporter will get this automatically. 
      >single repository for all cases - `suite_mode:1`<br>
      single repository with baseline support - `suite_mode:2`<br>
@@ -37,7 +37,7 @@ module.exports = {
         "testrail-jest-reporter", 
         { project_id: 1, 
             baseUrl: 'http://localhost', 
-            milestone: '<milestone_name>',
+            milestone: {name:'<milestone_name>', description:'<milestone_description>'},
             suite_mode: 3,
             statuses: {pending: 7}
         },
@@ -57,7 +57,7 @@ module.exports = {
             { 
                 "project_id": "1",
                 "baseUrl": 'http://localhost',
-                "milestone": '<milestone_name>',
+                "milestone": {"name":'<milestone_name>', "description":'<milestone_description>'},
                 "suite_mode": "3",
                 "statuses": {"pending": "7"}
             }
@@ -78,7 +78,7 @@ The **testrail.conf.js** file needs to be created in your project's root folder.
 ### Use TestRail Milestone
 The first version of the Reporter requires you to use a milestone.
  - Use TestRail Milestone to versioning your tests.
- - **testrail.conf.js** file needs to have Milestone name filled. Or <br>it can be specified in
+ - **testrail.conf.js** file needs to have Milestones name and description filled. Or <br>it can be specified in
 [Jest configuration](https://github.com/AntonChaukin/testrail-jest-reporter#jest-configurations)
 
 #### Example
@@ -87,10 +87,11 @@ module.exports = {
     'baseUrl': 'http://localhost',
     'user': 'user@example.com',
     'pass': 'some-password',
-    'milestone': '<milestone_name>',
+    'milestone': {'name':'<milestone_name>', 'description':'<milestone_description>'},
     'regex': /[C][?\d]{3,6}/gm
 }
 ```
+Or you can use previous variant ```'milestone': '<milestone_name>'```
 
 ##### **Important:**  If you use a public repository, please, secure your sensitive data.
 ### Enable TestRail API
@@ -139,7 +140,7 @@ and shouldn't be confused with a Test Case ID, <br>which is assigned to a test c
 **This version:**
 - ~~Add new tests Run if there are testcases that are not present in any of the existing TestRail tests Runs.~~ >> **Done in 1.1.0**
 - Add new test Runs if the Milestone not specified.
-- Add new TestRail Milestone if the specified Milestone not present in the Project.
+- ~~Add new TestRail Milestone if the specified Milestone not present in the Project.~~ >> **Done in 1.2.0**
 - ~~Also need to write more tests.~~                                   >> **Done in 1.0.4**
 - ~~Added ability to specify several case_ids in one test description~~ >> **Done in 1.0.6**
 - ~~Added JSON validator to API interface~~ >> **Done in 1.0.7**

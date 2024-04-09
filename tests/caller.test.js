@@ -3,6 +3,8 @@ const Utils = require('../src/utils');
 const error = chalk.bold.red;
 const {passed, duration, name, tr_get_project,
     tr_milestone, tr_plan, tr_run, tr_test, tr_result} = require('./sample');
+const api = require("../lib/interface");
+const caller = require("../src/caller");
 
 describe('Caller tests', function () {
     let runs_len, milestone_name, milestone, milestone_id, get_milestones_resp,
@@ -144,19 +146,23 @@ describe('Caller tests', function () {
         it('get_milestone_id if milestone name was not found', async () => {
             const caller = require('../src/caller');
             const api = require('../lib/interface');
+            const milestone = tr_milestone();
 
-            caller.init({milestone: 'Sprint 1', project_id: 1, suite_mode: 2});
+            caller.init({milestone: milestone, project_id: 1, suite_mode: 2});
             const log_spy = jest.spyOn(global.console, 'log')
                 .mockResolvedValueOnce(true);
             const get_milestones_spy = jest.spyOn(api, 'get_milestones')
                 .mockResolvedValueOnce(get_milestones_resp);
+            const add_milestone_spy = jest.spyOn(api, 'add_milestone')
+                .mockResolvedValueOnce(milestone);
 
             await caller.get_milestone_id();
             get_milestones_spy.mockRestore();
 
-            expect(log_spy).toHaveBeenCalledTimes(1);
-            log_spy.mockRestore();
-            expect(caller._milestone_id).toBeFalsy();
+            expect(add_milestone_spy).toHaveBeenCalledTimes(1);
+            expect(add_milestone_spy).toHaveBeenCalledWith(1, {name: milestone.name, description: milestone.description});
+            add_milestone_spy.mockRestore();
+            expect(caller._milestone_id).toEqual(milestone.id);
         });
 
     });

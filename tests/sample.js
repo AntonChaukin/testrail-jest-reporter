@@ -321,9 +321,10 @@ function tr_plan(options) {
 function tr_milestone(options) {
     const _id = options && options.id || increaser();
     const _name = options && options.name || faker.random.words();
+    const _description = faker.random.words();
     return {
         "completed_on": null,
-        "description": "...",
+        "description": _description,
         "due_on": 1391968184,
         "id": _id,
         "is_completed": false,

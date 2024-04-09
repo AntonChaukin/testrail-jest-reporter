@@ -10,5 +10,6 @@ module.exports = {
     //You TestRail password or API key for the API authentication
     'pass': pass || 'some-password',
     //'milestone': '<milestone_name>'
+    //'milestone': {name:'<milestone_name>', description:'<milestone_description>'}
     //'suite_mode': '<suite_mode>'
 }

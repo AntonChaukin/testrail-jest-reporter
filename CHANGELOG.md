@@ -1,3 +1,9 @@
+v1.2.0 / 2024-04-09
+==================
+
+* Added support for new TestRail Milestone if the specified Milestone not present in the Project.
+* Added support for Milestone description
+
 v1.1.7 / 2024-04-08
 ==================
 

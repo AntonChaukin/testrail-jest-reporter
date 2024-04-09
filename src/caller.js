@@ -18,7 +18,7 @@ module.exports = {
 
 function init(_options) {
     this._baseUrl = _options.baseUrl ;
-    this._milestone_name = _options.milestone;
+    this._milestone = utils.isPlainObject(_options.milestone) ? _options.milestone : {name: _options.milestone};
     this._project_id = _options.project_id;
     this._suite_mode = _options.suite_mode;
     this._run_update = _options.run_update;
@@ -65,15 +65,15 @@ function get_milestone_id() {
     return get_suite_mode.call(this)
         .then(() => tr_api.get_milestones(this._project_id, {is_completed: 0}))
         .then(res => {
-            const _milestone = res.milestones.filter((milestone) => milestone.name === this._milestone_name);
+            const _milestone = res.milestones.filter((milestone) => milestone.name === this._milestone.name);
             if (_milestone && !!_milestone.length) {
-                this._milestone_id = _milestone[0].id;
+                return _milestone[0];
             } else {
-                throw new ReporterError(`Can not find milestone with name ${this._milestone_name}!
-                \nNo one tests results will be reported.
-                \nPlease, check the "milestone" param you specified in congif and try again`)
+                return tr_api.add_milestone(this._project_id,
+                    {name: this._milestone.name, description: this._milestone.description || 'Automated generated milestone'});
             }
         })
+        .then(milestone => {this._milestone_id = milestone.id;})
         .catch(e => {
             console.log(error(e.stack));
         })
